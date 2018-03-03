@@ -1,9 +1,10 @@
 # MicroPython
-## Preface
-this git is solely for storing different projects set up at my desk
+
+## Potentiometer (or analog voltage) to Servo signal converter
+
 ## Description
-none for now
-## branching
-only master for now, every project will get its own branching
+5k-10k POT on pin GND - A0 - +3V __OR__ 0/3VDC on pin A0
+
+Servo on pin D0
 
 ### thanks!
