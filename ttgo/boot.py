@@ -6,12 +6,13 @@
 
 #esp.osdebug(None)
 
-#import webrepl
+import webrepl
 
-#webrepl.start()
+webrepl.start()
 
 import os, network, machine, ntptime, time, st7789, math, gc, esp
 from st7789 import color565
+
 from machine import RTC, ADC, Pin
 from ttgo import ttgo_init, display, clock, wifi_list, message, snake, display
 import time
@@ -39,8 +40,12 @@ def setDateTime():
   ntptime.settime() # set the rtc datetime from the remote server
   rtc.datetime()
     
-ttgo_init()
+ttgo_init(5)
+display.fill_rect(0,0,240,135, color565(127,255,0))
+display.fill_rect(1,1,238,133, color565(255,0,255))
+time.sleep(5)
 message(text="Scanning WLAN SSIDs ...")
+
 ch_xyz = [a32, a33, a39] = [ADC(Pin(i)) for i in [32, 33, 39]]
 for axis in ch_xyz:
   axis.atten(ADC.ATTN_11DB)
@@ -151,7 +156,10 @@ do_connect()
 setDateTime()
 
 #snake()
-#wifi_list()
+
+
+while 1:
+    wifi_list()
 #time.sleep(5)
 clock()
 

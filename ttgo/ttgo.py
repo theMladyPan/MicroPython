@@ -35,12 +35,12 @@ button1.irq(trigger=Pin.IRQ_FALLING, handler=callback_b1) #interrupt for right b
 button2.irq(trigger=Pin.IRQ_FALLING, handler=callback_b2) #interrupt for left button (button 1)
 
 BLK = Pin(BL_Pin, Pin.OUT)
-spi = SPI(baudrate=40000000, miso=Pin(MISO_Pin), mosi=Pin(MOSI_Pin, Pin.OUT), sck=Pin(SCLK_Pin, Pin.OUT))
-display = st7789.ST7789(spi, 135, 240, cs=Pin(CS_Pin), dc=Pin(DC_Pin), rst=None)
+spi = SPI(baudrate=80000000, miso=Pin(MISO_Pin), mosi=Pin(MOSI_Pin, Pin.OUT), sck=Pin(SCLK_Pin, Pin.OUT))
+display = st7789.ST7789(spi, 240, 135, cs=Pin(CS_Pin), dc=Pin(DC_Pin), rst=None, xstart=40, ystart=54   ) # 135/240
 
 
-def clear_screen():
-    display._set_mem_access_mode(0, False, False, False)
+def clear_screen(mode=0):
+    display._set_mem_access_mode(mode, False, False, False)
     display.fill(0) #filling the display with black
 
 def fill_random_color():
@@ -76,7 +76,7 @@ def fill_vline():
 def random_color():
     return st7789.color565(random.getrandbits(8),random.getrandbits(8),random.getrandbits(8))
     
-def message(x=0, y=0, text="", size=2):
+def message(x=0, y=0, text="", size=3):
   display.fill(0)
   display.text((x, y), text, st7789.WHITE, sysfont, size, nowrap=False)
     
@@ -84,11 +84,11 @@ def wifi_list():
   wlan = network.WLAN(network.STA_IF)
   networks = wlan.scan()
   display.fill(0)
-  display.text((0, 0), "WLAN list:", st7789.CYAN, sysfont, 2, nowrap=True)
+  display.text((0, 0), "WLAN list:", st7789.CYAN, sysfont, 1, nowrap=True)
   for i in range(0, len(networks)):
     ssid, signal = networks[i][0].decode("utf-8"), networks[i][3]
     if len(ssid)>13:
-      ssid=ssid[0:10]+"..."
+      ssid=ssid[0:20]+"..."
     if signal < -90:
       color=st7789.RED
     elif signal <-80:
@@ -99,10 +99,10 @@ def wifi_list():
     display.text((display.width-11*4, i*9+20), str(signal), color, sysfont, 1, nowrap=True)
     display.text((display.width-6*4, i*9+20), "dBm", color, sysfont, 1, nowrap=True)
     
-def ttgo_init():
+def ttgo_init(mode=0):
   clear_screen() #clear screen by filling black rectangle (slow)
   BLK.value(1) #turn backlight on
-  display._set_mem_access_mode(0, False, False, True) #setting screen orientation (rotation (0-7), vertical mirror, horizonatal mirror, is bgr), False, False, True)
+  display._set_mem_access_mode(mode, False, False, True) #setting screen orientation (rotation (0-7), vertical mirror, horizonatal mirror, is bgr), False, False, True)
 
 def clock(v=150):
   second, minute, hour = None, None, None
