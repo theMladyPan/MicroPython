@@ -5,7 +5,7 @@
 
 #webrepl.start()
 
-import network, machine, ntptime, st7789, gc, esp, time
+import network, machine, ntptime, st7789, gc, esp, time, struct
 from st7789 import color565, sysfont
 
 from machine import RTC, ADC, Pin, SPI, UART, Timer
@@ -26,6 +26,10 @@ CS_Pin = 5     #chip select pin
 
 Button1_Pin = 35; #right button
 Button2_Pin = 0;  #left button
+TX_EN_Pin = 17;
+TX_Pin = 21;
+RX_Pin = 22;
+
 HORIZONTAL = 5
 VERTICAL=0
 
@@ -107,12 +111,13 @@ display._set_mem_access_mode(MODE, False, False, True) #setting screen orientati
 
 
 # bind button interrupts
-button1.irq(trigger=Pin.IRQ_FALLING, handler=wifi_list) #interrupt for right button (button 2)
+#button1.irq(trigger=Pin.IRQ_FALLING, handler=wifi_list) #interrupt for right button (button 2)
 button2.irq(trigger=Pin.IRQ_FALLING, handler=reset) #interrupt for right button (button 2)
 
 
-uart1 = UART(1, baudrate=115200, tx=21, rx=22, timeout=100, timeout_char=5)
+uart1 = UART(1, baudrate=115200, tx=TX_Pin, rx=RX_Pin, timeout=500, timeout_char=1)
 
+TX_EN = Pin(TX_EN_Pin, Pin.OUT)
 
 tim1 = Timer(1)
 #tim1.init(period=1000, mode=Timer.PERIODIC, callback=request)
@@ -124,11 +129,39 @@ while(1):
   b.append(0x00)
   b.append(0x1F)
   b.append(0xDB)
-  uart1.write(b)  # write 5 bytes
+
+  #enable RS485 for transmit
+  TX_EN.on()
+  n = uart1.write(b)  # write 5 bytes
+  time.sleep_us(350)
+  TX_EN.off()
+  #message("Sent: "+str(n), clear=True, size=2)
   
-  m = uart1.read()         # read up to 5 bytes
-  message("Received: "+str(m), size=3, clear=True)
-  time.sleep(1)
+  header_buf = bytearray(1)
+  uart1.readinto(header_buf)
+  if(header_buf[0]!=0x01):
+    print("Invalid header: ", header_buf)
+  else:
+    len_buf = bytearray(1)
+    uart1.readinto(len_buf)
+    msg = bytearray(len_buf[0]-2)
+    uart1.readinto(msg) 
+    crc_buf = bytearray(1)
+    uart1.readinto(crc_buf)
+
+    chksum = header_buf[0] + len_buf[0] + crc_buf[0]
+    for i in msg:
+        chksum += int(i)
+    
+    print("CRC: ", chksum, chksum&0xFF)
+
+    print("msg", msg)
+
+    message("id: "+str(struct.unpack("!L", msg[3:7])[0]), y=24, size=2, clear=True)
+    message("p: "+str(struct.unpack("!L", msg[7:11])[0])+" ubar", y=48, size=2)
+    message("t: "+str((struct.unpack("!L", msg[11:15])[0]-272150)/1000)+" oC", y=72, size=2)
+  while(button1.value()):
+    pass
 
 #message("Connecting to: "+ssid)
 #do_connect()
