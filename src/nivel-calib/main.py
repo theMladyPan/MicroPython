@@ -1,17 +1,34 @@
-# This is your main script.# This file is executed on every boot (including wake-boot from deepsleep)
+import network, machine, ntptime, gc, esp, time, config
+import uos as os
+from machine import RTC, ADC, Pin, SPI, TouchPad
 
 
-#import webrepl
+machine.freq(240*10**6)
+esp.osdebug(0)
 
-#webrepl.start()
+print("RAM free kiB:", gc.mem_free())
+s = os.statvfs(".")
+print("Mem freeMiB:", s[0]*s[3]/2**20)
 
-import network, machine, ntptime, gc, esp, time
+# bind button interrupts
+# button1.irq(trigger=Pin.IRQ_FALLING, handler=wifi_list) #interrupt for right button (button 2)
+# button2.irq(trigger=Pin.IRQ_FALLING, handler=reset) #interrupt for right button (button 2)
 
-from machine import RTC, ADC, Pin, SPI, UART, Timer
-import config
+# uart1 = UART(1, baudrate=115200, tx=21, rx=22, timeout=100, timeout_char=5)
 
-def mhz(n):
-  return n*10**6
+
+# tim1 = Timer(1)
+# tim1.init(period=1000, mode=Timer.PERIODIC, callback=request)
+
+mm=50.1
+led = Pin(2, Pin.OUT)
+# time.sleep(5)
+# create motor on pins A, Ainv, B, Binv = 25, 26, 32, 33
+hspi = SPI(1, 500000, sck=Pin(14), mosi=Pin(13), miso=Pin(12))
+cs = Pin(27, mode=Pin.OUT, value=1) # cs pin, high = deselected, low=selected
+
+touch4 = TouchPad(Pin(4))
+touch15 = TouchPad(Pin(15))
 
 
 def do_connect(block=False):
@@ -46,21 +63,6 @@ def init_adc():
   min = list(cur)
   max = list(cur)
 
-
-machine.freq(mhz(240))
-esp.osdebug(0)
-
-print("Mem free:", gc.mem_free())
-
-# bind button interrupts
-# button1.irq(trigger=Pin.IRQ_FALLING, handler=wifi_list) #interrupt for right button (button 2)
-# button2.irq(trigger=Pin.IRQ_FALLING, handler=reset) #interrupt for right button (button 2)
-
-# uart1 = UART(1, baudrate=115200, tx=21, rx=22, timeout=100, timeout_char=5)
-
-
-# tim1 = Timer(1)
-# tim1.init(period=1000, mode=Timer.PERIODIC, callback=request)
 
 
 class Stepper:
@@ -134,9 +136,6 @@ class Stepper:
       pass
 
 
-mm=50.1
-led_OR = Pin(2, Pin.OUT)
-
 def readVals(spi, cs, average_of=1): 
 
   VALmin = 1638.0 # counts = 10% 2^14
@@ -148,7 +147,8 @@ def readVals(spi, cs, average_of=1):
   pressure = 0
 
   rxdata = bytearray(4)
-  led_OR(1)
+  led(1)
+
   for i in range(average_of):
     try:
       cs(0)                               # Select peripheral.
@@ -168,37 +168,51 @@ def readVals(spi, cs, average_of=1):
     temp += (t*200.0/2047.0)-50.0
     pressure += (((pval-VALmin)*(Pmax-Pmin))/(VALmax-VALmin)) + Pmin
     time.sleep_us(500)
-  led_OR(0)
+
+  led(0)
   temp/=average_of
   pressure/=average_of
-  pressure = (11.2*pressure) - (.0308*(pressure**2))
-  # fit = 11,2x + -0,0308x^2, R2=1
+  # pressure = (11.2*pressure) - (.0308*(pressure**2))
+  # fit = 11,2x + -0,0308x^2, R2=1
 
   return temp, pressure
 
 
-def cycles(n=10, step=10*mm, speed=1500, sleep_ms=1000, average=100):
+def cycles(n=10, step=mm, speed=1500, sleep_ms=100, average=100, filename="default.csv"):
+  f = open(filename, "w")
+
   for i in range(n): 
     m(-step, speed)
     time.sleep_ms(sleep_ms)
     t, p = readVals(hspi,cs,average)
-    print(";".join([str(i+1), str(p).replace(".",","), str(t).replace(".",",")]))
+    vals = ";".join([str(i+1), str(p).replace(".",","), str(t).replace(".",",")])
+    print(vals)
+    f.write(vals + "\n")
   for i in range(n): 
     m(step, speed)
     time.sleep_ms(sleep_ms)
     t, p = readVals(hspi,cs,average)
-    print(";".join([str(n-i-1), str(p).replace(".",","), str(t).replace(".",",")]))
+    vals = ";".join([str(n-i-1), str(p).replace(".",","), str(t).replace(".",",")])
+    print(vals)
+    f.write(vals + "\n")
+  f.close()
+  
+def blink(n):
+    for i in range(n):        
+        led(1)
+        time.sleep_ms(100)
+        led(0)
+        time.sleep_ms(100)
 
-# wlan = do_connect(block=True)
-# print(f"connected to {wlan.ifconfig()}")
-# setDateTime()
+# wlan = do_connect(block=True)
+# print(f"connected to {wlan.ifconfig()}")
+# setDateTime()
 
-led_OR(1)
-# time.sleep(5)
-# create motor on pins A, Ainv, B, Binv = 25, 26, 32, 33
 m = Stepper(26,25,33,32)
-hspi = SPI(1, 500000, sck=Pin(14), mosi=Pin(13), miso=Pin(12))
-cs = Pin(27, mode=Pin.OUT, value=1) # cs pin, high = deselected, low=selected
+blink(3)
 
-led_OR(0)
-# machine.deepsleep(5000)
+while 1:
+    if touch4.read()<256:
+        cycles(n=20, sleep_ms=100, average=100, filename="rychle.csv")
+    if touch15.read()<256:
+        cycles(n=200, sleep_ms=10000, average=1000, filename="pomale.csv")
