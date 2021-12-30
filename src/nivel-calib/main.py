@@ -125,17 +125,80 @@ class Stepper:
     for i in range(steps):
       self.rev(sleep_us)
 
+  def __call__(self, steps, sleep_us):
+    if steps>0:
+      self.ffwd(steps, sleep_us)
+    elif steps<0:
+      self.frev(abs(steps), sleep_us)
+    else:
+      pass
+
+
+mm=50.1
+led_OR = Pin(2, Pin.OUT)
+
+def readVals(spi, cs, average_of=1): 
+
+  VALmin = 1638.0 # counts = 10% 2^14
+  VALmax = 14745.0 # counts = 90% 2^14
+  Pmin = 0.0 # mbar
+  Pmax = 60.0 # mbar, or: 611.8298 mm
+
+  temp = 0
+  pressure = 0
+
+  rxdata = bytearray(4)
+  led_OR(1)
+  for i in range(average_of):
+    try:
+      cs(0)                               # Select peripheral.
+      spi.readinto(rxdata, 0x00)          # Read 8 bytes inplace while writing 0x42 for each byte.
+    finally:
+      cs(1)  
+
+    b0 = rxdata[0]
+    b1 = rxdata[1]
+    t0 = rxdata[2]
+    t1 = rxdata[3]
+
+    status = b0 & 0b11000000;
+    pval = ((b0 & 0b00111111)<<8) + b1;
+    t = ((t0<<8) + (t1 & 0b11111000))>>5;
+
+    temp += (t*200.0/2047.0)-50.0
+    pressure += (((pval-VALmin)*(Pmax-Pmin))/(VALmax-VALmin)) + Pmin
+    time.sleep_us(500)
+  led_OR(0)
+  temp/=average_of
+  pressure/=average_of
+  pressure = (11.2*pressure) - (.0308*(pressure**2))
+  # fit = 11,2x + -0,0308x^2, R2=1
+
+  return temp, pressure
+
+
+def cycles(n=10, step=10*mm, speed=1500, sleep_ms=1000, average=100):
+  for i in range(n): 
+    m(-step, speed)
+    time.sleep_ms(sleep_ms)
+    t, p = readVals(hspi,cs,average)
+    print(";".join([str(i+1), str(p).replace(".",","), str(t).replace(".",",")]))
+  for i in range(n): 
+    m(step, speed)
+    time.sleep_ms(sleep_ms)
+    t, p = readVals(hspi,cs,average)
+    print(";".join([str(n-i-1), str(p).replace(".",","), str(t).replace(".",",")]))
 
 # wlan = do_connect(block=True)
 # print(f"connected to {wlan.ifconfig()}")
 # setDateTime()
 
-led_OR = Pin(4, Pin.OUT)
 led_OR(1)
-time.sleep(5)
+# time.sleep(5)
 # create motor on pins A, Ainv, B, Binv = 25, 26, 32, 33
-#mot1 = Stepper(26,25,33,32)
-#mot1.ffwd(400, 1000)
-#mot1.frev(400, 1000)
+m = Stepper(26,25,33,32)
+hspi = SPI(1, 500000, sck=Pin(14), mosi=Pin(13), miso=Pin(12))
+cs = Pin(27, mode=Pin.OUT, value=1) # cs pin, high = deselected, low=selected
+
 led_OR(0)
-machine.deepsleep(5000)
+# machine.deepsleep(5000)
