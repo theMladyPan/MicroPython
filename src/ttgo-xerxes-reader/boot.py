@@ -114,19 +114,25 @@ def calibrate(p):
 uart1=None
 
 def netscan():
-  xoff=0
+  xoff = 0
+  yoff = 0
   message(".", clear=True)
   leaves = []
   for i in range(1, 128):
     send_msg(uart1, my_addr, i.to_bytes(1, "big"), b"\xFF")  # write empty payload
     time.sleep(0.005)
     if uart1.any():
-        reply = read_raw(uart1, timeout=0.005)       
-        leaves.append(reply["source"])
-        
-    if i%5 == 0:
-        xoff += 8
-        message(".", x=xoff)   
+        reply = read_raw(uart1, timeout=0.005)     
+        if reply:  
+            leaves.append(reply["source"])
+            message("#", x=xoff, y=yoff)
+    else:
+        message("-", x=xoff, y=yoff)   
+    
+    xoff += 10
+    if i % 24 == 0:
+        xoff = 0
+        yoff += 20
         
   if len(leaves)>0:
     print("Found: ")
