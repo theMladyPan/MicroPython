@@ -9,11 +9,15 @@ import network, machine, ntptime, st7789, gc, esp, time
 from st7789 import color565, sysfont
 
 from machine import RTC, ADC, Pin, SPI, UART, Timer
-from config import ssid, password
-from utils import wifi_list, clock
+from config import ssid, password, my_addr, TX_EN_Pin
+from utils import wifi_list
+from xerxes import send_msg
 
 def mhz(n):
   return n*10**6
+
+machine.freq(mhz(240))
+esp.osdebug(0)
 
 BL_Pin = 4     #backlight pin
 SCLK_Pin = 18  #clock pin
@@ -83,17 +87,12 @@ def calibrate(p):
         max[i] = last[i]
 
 
-def request(p):
-  uart1.write()
-
   
-machine.freq(mhz(240))
-esp.osdebug(0)
-
 print("Mem free:", gc.mem_free())
 
 button1 = Pin(Button1_Pin, Pin.IN, Pin.PULL_UP)
 button2 = Pin(Button2_Pin, Pin.IN, Pin.PULL_UP)
+tx_en = Pin(TX_EN_Pin, Pin.OUT, value=0)
 
 BLK = Pin(BL_Pin, Pin.OUT)
 spi = SPI(baudrate=40000000, miso=Pin(MISO_Pin), mosi=Pin(MOSI_Pin, Pin.OUT), sck=Pin(SCLK_Pin, Pin.OUT))
@@ -111,23 +110,23 @@ button1.irq(trigger=Pin.IRQ_FALLING, handler=wifi_list) #interrupt for right but
 button2.irq(trigger=Pin.IRQ_FALLING, handler=reset) #interrupt for right button (button 2)
 
 
-uart1 = UART(1, baudrate=115200, tx=21, rx=22, timeout=100, timeout_char=5)
+uart1 = UART(1, baudrate=115200, tx=22, rx=21, timeout=10, timeout_char=5)
 
 
 tim1 = Timer(1)
 #tim1.init(period=1000, mode=Timer.PERIODIC, callback=request)
 
+#clock(display, 0)
+
 while(1):
-  b = bytearray()
-  b.append(0x01)
-  b.append(0x05)
-  b.append(0x00)
-  b.append(0x1F)
-  b.append(0xDB)
-  uart1.write(b)  # write 5 bytes
+  for i in range(255):
+    send_msg(uart1, my_addr, i.to_bytes(1, "big"), b"")  # write empty payload
+    time.sleep(0.01)
+  while(uart1.any() == 0):
+    pass #  wait until something is received
   
   m = uart1.read()         # read up to 5 bytes
-  message("Received: "+str(m), size=3, clear=True)
+  message(str(m), size=1, clear=True)
   time.sleep(1)
 
 #message("Connecting to: "+ssid)
