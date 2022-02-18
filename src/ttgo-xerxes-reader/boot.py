@@ -115,18 +115,21 @@ uart1=None
 
 def netscan():
   leaves = []
-  for i in range(1, 255):
+  for i in range(1, 128):
     send_msg(uart1, my_addr, i.to_bytes(1, "big"), b"\xFF")  # write empty payload
     time.sleep(0.005)
     if uart1.any():
         reply = read_raw(uart1, timeout=0.005)       
         leaves.append(reply["source"])
-  print("Found: ")
-  print(", ".join(leaves))
-  message(", ".join(leaves), size=2, clear=True)
+  if len(leaves)>0:
+    print("Found: ")
+    print(", ".join(leaves))
+    message(", ".join(leaves), size=2, clear=True)
+  else:
+    print("Nothing found.")  
   
 def read_all_leaves():         
-    for i in range(1, 255):
+    for i in range(1, 128):
         send_msg(uart1, my_addr, i.to_bytes(1, "big"), b"")  # write empty payload
         time.sleep(0.005)
         if uart1.any():
@@ -153,9 +156,11 @@ def read_all_leaves():
 def read_all_int(pin=None):
     print("starting reading...")
     read_all_flag.set()
+    message("Searching...", clear=True)
 
 def netscan_int(pin=None):
     netscan_flag.set()       
+    message("Searching...", clear=True)
     
 print("Mem free:", gc.mem_free())
 
