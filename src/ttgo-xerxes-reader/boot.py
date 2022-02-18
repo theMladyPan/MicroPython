@@ -114,6 +114,8 @@ def calibrate(p):
 uart1=None
 
 def netscan():
+  xoff=0
+  message(".", clear=True)
   leaves = []
   for i in range(1, 128):
     send_msg(uart1, my_addr, i.to_bytes(1, "big"), b"\xFF")  # write empty payload
@@ -121,6 +123,11 @@ def netscan():
     if uart1.any():
         reply = read_raw(uart1, timeout=0.005)       
         leaves.append(reply["source"])
+        
+    if i%5 == 0:
+        xoff += 8
+        message(".", x=xoff)   
+        
   if len(leaves)>0:
     print("Found: ")
     print(", ".join(leaves))
@@ -160,7 +167,6 @@ def read_all_int(pin=None):
 
 def netscan_int(pin=None):
     netscan_flag.set()       
-    message("Searching...", clear=True)
     
 print("Mem free:", gc.mem_free())
 
