@@ -152,6 +152,9 @@ def read_all_leaves(leaves):
                         print("Error rcvd: ")
                         print(uart1.read())
                         continue
+                    except ValueError:
+                        print("Invalid checksum received")
+                        continue
                     
                     if reply:
                         readings = read_pleaf_data(reply["payload"])
@@ -161,19 +164,22 @@ def read_all_leaves(leaves):
                         t2 += readings ["temp_ext2"]
                         delitel += 1
                     
-            p /= delitel
-            ts /= delitel
-            t1 /= delitel
-            t2 /= delitel
+            if delitel > 0:
+                p /= delitel
+                ts /= delitel
+                t1 /= delitel
+                t2 /= delitel
             
-            multiline(
-                reply["source"] + 
-                "\np:   %.3f mm" % p +
-                "\nts:  %.1f oC" % ts + 
-                "\nte1: %.1f oC" % t1 + 
-                "\nte2: %.1f oC" % t2,
-                clear=True,
-            )
+                multiline(
+                    i + 
+                    "\np:   %.3f mm" % p +
+                    "\nts:  %.1f oC" % ts + 
+                    "\nte1: %.1f oC" % t1 + 
+                    "\nte2: %.1f oC" % t2,
+                    clear=True,
+                )
+            else:
+                multiline("No data rcvd.\nBroken cable?", clear=True)
 
     message("Release...", clear=True)
     while not button1():

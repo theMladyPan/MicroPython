@@ -151,8 +151,11 @@ def read_msg(com, *, timeout=0):
     msg_array = []
     for i in range(int((msg_len-10)/4)):
         next_word = com.read(4)
-        for i in next_word:
-            checksum += i
+        try:
+            for i in next_word:
+                checksum += i
+        except TypeError:
+            raise RuntimeError("Invalid message received")
         msg_array.append(struct.unpack("!I", next_word)[0])
     
     #read checksum
