@@ -30,8 +30,7 @@ def send_msg(com, sender, destination, payload: bytes, *, tx_en=None):
     if tx_en:
         # deactivate transmission mode
         tx_en.off()
-    #time.sleep(0.001)
-    #com.write(os.urandom(128))
+
     
 class StopWatch:
     def __init__(self, timeout=0):
@@ -84,7 +83,7 @@ def read_raw(com, *, timeout=0):
     for i in [src, dst, sot]:
         checksum += struct.unpack("!B", i)[0]
     
-    # read and unpack all data into array, assiming it is uint32_t, big-endian
+    # read and unpack all data into array, assuming it is uint32_t, big-endian
     msg_array = []
     for i in range(int(msg_len-6)):
         next_byte = com.read(1)
@@ -121,7 +120,6 @@ def read_msg(com, *, timeout=0):
     # read message length
     # msg_len = int(com.read(1).hex(), 16)
     msg_len = struct.unpack("!B", com.read(1))[0]
-    print(msg_len)
     
     checksum += msg_len
 
@@ -163,7 +161,7 @@ def read_msg(com, *, timeout=0):
     checksum %= 0x100
     if checksum:
         print("received checksum: ", checksum)
-        raise IOError("Invalid checksum received")
+        raise ValueError("Invalid checksum received")
 
     return {
         "source": to_hex(src),
@@ -176,12 +174,12 @@ def read_msg(com, *, timeout=0):
 def to_celsius(millikelvin):
     return (millikelvin / 1000) - 273.15
 
-def to_mmH2O(microbar):
-    return ( microbar / 1000000 ) * 10197.162129779;
+def to_mmH2O(pascal):
+    return ( pascal / 9.80665 )
 
 def read_pleaf_data(payload):
     return {
-        "pressure": to_mmH2O(payload[0]),
+        "pressure": to_mmH2O(payload[0] / 1000),
         "temp_sens": to_celsius(payload[1]),
         "temp_ext1": to_celsius(payload[2]),
         "temp_ext2": to_celsius(payload[3])
