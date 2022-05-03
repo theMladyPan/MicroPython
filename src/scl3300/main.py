@@ -86,18 +86,35 @@ button2 = Pin(TTGO_Pins.Button2, Pin.IN, Pin.PULL_UP)
 
 show_stdev = False
 
-ns = 80
+ns = 100
 
+print("\n\n")
+print("################################################################################")
+print("############################# Starting measurement #############################")
+print("################################################################################")
+print("\n")
+print("x1 [°]; stdev_x1; y1 [°]; stdev_y1; x2 [°]; stdev_x2; y2 [°]; stdev_y2; time [ms]")
 
 while 1:
 
-#     ts = time.ticks_ms()
     try:
-        if not button1():
+        if not button1() and button2():
             show_stdev = False
 
-        if not button2():
+        if not button2() and button1():
             show_stdev = True
+
+        if not button1() and not button2():
+            if ns == 100:
+                ns = 20
+            else:
+                ns = 100
+            display.fill(0)
+            display.text(font_big, "average of:", 0, 0)
+            display.text(font_big, str(ns), 0, 40)
+            display.text(font_big, "samples", 60, 40)
+            time.sleep(1)
+            display.fill(0)
 
         x, y = [], []
         for i in range(ns):
@@ -113,6 +130,15 @@ while 1:
             display.text(font_big, "x1  : " + str(round(sum(x)/len(x), 4)) + "     ", 0, 0)
             display.text(font_big, "y1  : " + str(round(sum(y)/len(y), 4)) + "     ", 0, 34)
 
+        print(
+            str(sum(x)/len(x)),
+            str(stdev(x)),
+            str(sum(y)/len(y)),
+            str(stdev(y)),
+            sep="; ",
+            end="; "
+        )
+
         x, y = [], []
 
         for i in range(ns):
@@ -127,25 +153,22 @@ while 1:
             display.text(font_big, "x2  : " + str(round(sum(x)/len(x), 4)) + "     ", 0, 68)
             display.text(font_big, "y2  : " + str(round(sum(y)/len(y), 4)) + "     ", 0, 102)
 
+        
+        print(
+            str(sum(x)/len(x)),
+            str(stdev(x)),
+            str(sum(y)/len(y)),
+            str(stdev(y)),
+            str(time.ticks_ms()),
+            sep="; "
+        )
+
+    except KeyboardInterrupt:
+        raise
+
     except:
+        print("error")
         pass  # just continue
 
-""" 
-    print(
-        "avg(x): ", 
-        str(sum(x)/len(x)),
-        "°, stdev(x):",
-        str(stdev(x)),
-        "°, avg(y):", 
-        str(sum(y)/len(y)),
-        "°, stdev(y):",
-        str(stdev(y)),
-        "°, avg(z):", 
-        str(sum(z)/len(z)), 
-        "°, stdev(z):",
-        str(stdev(z)),
-        "°, dt: ", 
-        str(time.ticks_ms() - ts),
-        "ms"
-    ) """
+
 
