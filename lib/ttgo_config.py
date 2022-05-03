@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+class TTGO_Pins:
+    BL = 4     # backlight pin
+    SCLK = 18  # clock pin
+    MOSI = 19  # mosi pin
+    MISO = 2   # miso pin
 
-BL_Pin = 4     # backlight pin
-SCLK_Pin = 18  # clock pin
-MOSI_Pin = 19  # mosi pin
-MISO_Pin = 2   # miso pin
+    RESET = 23 # reset pin
+    DC = 16    # data/command pin
+    CS = 5     # chip select pin
 
-RESET_Pin = 23 # reset pin
-DC_Pin = 16    # data/command pin
-CS_Pin = 5     # chip select pin
+    Button1 = 35; # right button
+    Button2 = 0;  # left button
 
-Button1_Pin = 35; # right button
-Button2_Pin = 0;  # left button
 HORIZONTAL = 5
 VERTICAL=0
 
