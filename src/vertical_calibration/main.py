@@ -1,4 +1,3 @@
-
 from ttgo_config import *   
 import gc, esp, time
 
