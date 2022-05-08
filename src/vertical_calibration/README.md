@@ -1,0 +1,1 @@
+dont forget to load ../lib/ttgo_config.py
