@@ -36,6 +36,8 @@ def on_press(event):
 ser = serial.Serial('/dev/ttyUSB0', 115200)
 ser.write(b"\x03\x04")
 
+log = open(str(time.time())+".txt", "a")
+
 rcvd = ""
 while "# Starting measurement #" not in rcvd:
     rcvd = ser.readline().decode("utf-8")
@@ -71,6 +73,10 @@ data_plot=plt.plot(0,0)
 
 while 1:
     fresh = fetch(ser)
+    log.write(";".join(fresh))
+    log.write("\n")
+    log.flush()
+    
     try:
         t.append(float(fresh[-1]))
 
