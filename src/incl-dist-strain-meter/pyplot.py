@@ -4,7 +4,9 @@
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+import matplotlib
+
+matplotlib.use('Qt5Agg') 
 import random
 
 import serial
@@ -59,7 +61,7 @@ for valname in valnames:
 axes = []
 lines = []
 
-subsetlen = 20
+subsetlen = 100
 
 plt.ion()
 
@@ -76,6 +78,9 @@ for i in range (len(valnames)):
     )
 data_plot=plt.plot(0,0)
 
+plt.ioff()
+
+j = 0
 while run:
     fresh = fetch(ser)
     log.write(";".join(fresh))
@@ -105,8 +110,10 @@ while run:
 
             i += 1
 
-        plt.draw()
-        plt.pause(0.1)
+        if j%5 == 0:
+            plt.draw()
+            plt.pause(0.01)
+        j += 1
     except ValueError: ...
     except KeyboardInterrupt: 
         raise

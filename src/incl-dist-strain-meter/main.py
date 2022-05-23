@@ -118,7 +118,7 @@ display.init()
 display.on()
 
 f_show_std = Flag()
-ns = SampleRate(100)
+ns = SampleRate(10)
 
 button1 = Pin(TTGO_Pins.Button1, Pin.IN, Pin.PULL_UP)
 button2 = Pin(TTGO_Pins.Button2, Pin.IN, Pin.PULL_UP)
