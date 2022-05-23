@@ -87,11 +87,13 @@ hx1 = HX711(
     channel=HX711.CHANNEL_A_128
 )
 
+
 hx2 = HX711(
     d_out=25, 
     pd_sck=33, 
     channel=HX711.CHANNEL_A_128
 )
+
 
 spi = SPI(
     1, 
@@ -104,7 +106,7 @@ display = st7789.ST7789(
     spi, 
     240, 
     135, 
-    rotation=3, 
+    rotation=3,  # 3 = horizontalne 
     rotations=ORIENTATIONS, 
     cs=Pin(TTGO_Pins.CS, Pin.OUT), 
     reset=Pin(TTGO_Pins.RESET, Pin.OUT), 
@@ -116,7 +118,7 @@ display.init()
 display.on()
 
 f_show_std = Flag()
-ns = SampleRate(10)
+ns = SampleRate(100)
 
 button1 = Pin(TTGO_Pins.Button1, Pin.IN, Pin.PULL_UP)
 button2 = Pin(TTGO_Pins.Button2, Pin.IN, Pin.PULL_UP)
@@ -155,16 +157,7 @@ button2.irq(trigger=Pin.IRQ_FALLING, handler=change_sample) #interrupt for right
 
 
 print("\n\n")
-print("################################################################################")
-print("############################# Taring ###########################################")
-print("################################################################################")
-
-# tare all sensors
-
-
 print("############################# Starting measurement #############################")
-print("################################################################################")
-print("\n\n")
 print("str1; std_s1; str2; std_s2; x1 [°]; std_x1; y1 [°]; std_y1; x2 [°]; std_x2; y2 [°]; std_y2; l1 [mm]; std_l1; time [ms]")
 
 while 1:
@@ -181,6 +174,7 @@ while 1:
         s2_avg = sum(y)/len(y)
         s1_std = stdev(x)
         s2_std = stdev(y)
+
         
         # measure first inclinometer
         x, y = [], []
@@ -245,12 +239,12 @@ while 1:
             str(x1_avg),
             str(x1_std),
             str(y1_avg),
-            str(y1_avg),
+            str(y1_std),
 
             str(x2_avg),
             str(x2_std),
             str(y2_avg),
-            str(y2_avg),
+            str(y2_std),
 
             str(l1_avg),
             str(l1_std),
@@ -263,7 +257,6 @@ while 1:
         raise
 
     except:
-        print("error")
         pass  # just continue
 
 
