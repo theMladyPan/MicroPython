@@ -18,9 +18,13 @@ def fetch(sercom: serial.Serial):
     return decoded.rstrip("\r\n").split(";")
 
 def on_press(event):
-    global subsetlen, fig
+    global subsetlen, fig, run
     if event.key == 'x':
         exit(0)
+    
+    elif event.key == "escape":
+        run = False
+
     elif event.key == "up":
         subsetlen = int(subsetlen * 1.2)
         print(f"Showing {subsetlen} results")
@@ -47,6 +51,7 @@ valnames = fetch(ser)[:-1]
 
 t = []
 vals = {}
+run = True
 
 for valname in valnames:
     vals[valname] = []
@@ -71,14 +76,14 @@ for i in range (len(valnames)):
     )
 data_plot=plt.plot(0,0)
 
-while 1:
+while run:
     fresh = fetch(ser)
     log.write(";".join(fresh))
     log.write("\n")
     log.flush()
     
     try:
-        t.append(float(fresh[-1]))
+        t.append(float(fresh[-1])/1000.0)
 
         i = 0
         for valname in valnames:
