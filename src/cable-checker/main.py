@@ -31,6 +31,8 @@ display = st7789.ST7789(
 bind_display(display, font_small, font_big, 0)
 display.init()
 display.on()
+display.rotation(3)
+display.jpg("rubint.jpg", 0, 0, st7789.FAST)
 
 Lbtn = Pin(TTGO_Pins.Lbtn, Pin.IN, Pin.PULL_UP)
 Rbtn = Pin(TTGO_Pins.Rbtn, Pin.IN, Pin.PULL_UP)
@@ -86,6 +88,9 @@ batpin = ADC(Pin(14), atten=ADC.ATTN_11DB)
 
 bat_volt = batpin.read_uv()*2*4.04/1_000_000
 
+time.sleep(1)
+display.rotation(0)
+display.fill(0)
 
 while 1:
     bat_volt = bat_volt * .9 + batpin.read_uv()*2*4.04/10_000_000

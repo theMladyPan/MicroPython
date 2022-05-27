@@ -234,7 +234,7 @@ while 1:
             str(s1_avg),
             str(s1_std),
             str(s2_avg),
-            str(s2_avg),
+            str(s2_std),
 
             str(x1_avg),
             str(x1_std),
@@ -258,6 +258,3 @@ while 1:
 
     except:
         pass  # just continue
-
-
-
