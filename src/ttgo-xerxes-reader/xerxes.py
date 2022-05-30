@@ -43,7 +43,7 @@ class XerxesLeaf:
 class PressureLeaf(XerxesLeaf):
     def read(self) -> list:
         pl, msgid = super().read()
-        p, ts, te1, te2 = struct.unpack("!IIII", pl)
+        p, ts, te1, te2 = struct.unpack("!ffff", pl)
         return [p, ts, te1, te2], msgid
 
 
@@ -64,7 +64,7 @@ class DistanceLeaf(XerxesLeaf):
 class AngleLeaf(XerxesLeaf):
     def read(self) -> list:
         pl, msgid = super().read()
-        x, y, te1, te2 = struct.unpack("!IIII", pl)
+        x, y, te1, te2 = struct.unpack("!ffff", pl)
         return [x, y, te1, te2], msgid
 
 

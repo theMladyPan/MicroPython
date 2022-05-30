@@ -53,6 +53,7 @@ display = st7789.ST7789(
 display.init()
 display.on()
 
+display.jpg("rubint.jpg", 0, 0, st7789.FAST)
 
 class Flag:
     def __init__(self, value=False):
@@ -185,18 +186,23 @@ uart1 = UART(1, baudrate=115200, tx=22, rx=21, timeout=5, timeout_char=5)
 # tim1 = Timer(1)
 # tim1.init(period=1000, mode=Timer.PERIODIC, callback=request)
 
+
+time.sleep(1)
+display.fill(0)
 leaves = netscan()
 
 while 1:        
     i = 0
-    while 1:
+    while leaves:
         leaf = leaves[i]
         try:
-            reading = leaf.read()
-            print(leaf.addr, " replied with: ", reading[0], "msgid: ", hex(reading[1]))
+            reading, msgid = leaf.read()
+            print(leaf.addr, " replied with: ", reading, "msgid: ", hex(msgid))
+            message(text=str(hex(leaf.addr))+": "+str(bin(leaf.addr)), big=False)
             message(
-                text=str(reading[0])+str(to_mmH2O(reading[0][0])), 
-                clear=True
+                text=", ".join([str(i) for i in reading]), 
+                clear=False,
+                y=35
             )
         except RuntimeError:
             print(leaf.addr, " timeouted...")
