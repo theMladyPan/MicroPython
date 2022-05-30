@@ -92,37 +92,54 @@ time.sleep(1)
 display.rotation(0)
 display.fill(0)
 
-while 1:
+while Rbtn():
     bat_volt = bat_volt * .9 + batpin.read_uv()*2*4.04/10_000_000
     if bat_volt > 5:
-        message("Bat: 5V ", big=False, wrap=False)
+        message("Bat: 5V    ", big=False, wrap=False)
     else:
-        message("Bat: {:0.2f}".format(bat_volt)+"V  ", big=False, wrap=False)
-
+        message("Bat: {:0.2f}".format(bat_volt)+"V    ", big=False, wrap=False)
+        
     source.plus(1)
-    if sink.plus():
-        message("+ ---- +", y=174)
-    else:
-        message("+      +", y=174)
+    cons = []
+    cons.append("+") if sink.plus() else cons.append(" ")
+    cons.append("a") if sink.a() else cons.append(" ")
+    cons.append("b") if sink.b() else cons.append(" ")
+    cons.append("-") if sink.minus() else cons.append(" ")
+    message("+ "+"".join(cons), y=172)
     source.plus(0)
 
     source.a(1)
-    if sink.a():
-        message("a ---- a", y=146)
-    else:
-        message("a      a", y=146)
+    cons = []
+    cons.append("+") if sink.plus() else cons.append(" ")
+    cons.append("a") if sink.a() else cons.append(" ")
+    cons.append("b") if sink.b() else cons.append(" ")
+    cons.append("-") if sink.minus() else cons.append(" ")
+    message("a "+"".join(cons), y=144)
     source.a(0)
 
     source.b(1)
-    if sink.b():
-        message("b ---- b", y=118)
-    else:
-        message("b      b", y=118)
+    cons = []
+    cons.append("+") if sink.plus() else cons.append(" ")
+    cons.append("a") if sink.a() else cons.append(" ")
+    cons.append("b") if sink.b() else cons.append(" ")
+    cons.append("-") if sink.minus() else cons.append(" ")
+    message("b "+"".join(cons), y=116)
     source.b(0)
 
     source.minus(1)
-    if sink.minus():
-        message("- ---- -", y=90)
-    else:
-        message("-      -", y=90)
+    cons = []
+    cons.append("+") if sink.plus() else cons.append(" ")
+    cons.append("a") if sink.a() else cons.append(" ")
+    cons.append("b") if sink.b() else cons.append(" ")
+    cons.append("-") if sink.minus() else cons.append(" ")
+    message("- "+"".join(cons), y=88)
     source.minus(0)
+
+
+display.on()
+display.rotation(3)
+display.jpg("rubint.jpg", 0, 0, st7789.FAST)
+message("Goodbye...", big=False, y=115, x=130)
+time.sleep(3)
+display.off()
+deepsleep()
