@@ -101,37 +101,37 @@ while Rbtn():
         
     source.plus(1)
     cons = []
-    cons.append("+") if sink.plus() else cons.append(" ")
-    cons.append("a") if sink.a() else cons.append(" ")
-    cons.append("b") if sink.b() else cons.append(" ")
-    cons.append("-") if sink.minus() else cons.append(" ")
+    cons.append("+" if sink.plus() else " ")
+    cons.append("a" if sink.a() else " ")
+    cons.append("b" if sink.b() else " ")
+    cons.append("-" if sink.minus() else " ")
     message("+ "+"".join(cons), y=172)
     source.plus(0)
 
     source.a(1)
     cons = []
-    cons.append("+") if sink.plus() else cons.append(" ")
-    cons.append("a") if sink.a() else cons.append(" ")
-    cons.append("b") if sink.b() else cons.append(" ")
-    cons.append("-") if sink.minus() else cons.append(" ")
+    cons.append("+" if sink.plus() else " ")
+    cons.append("a" if sink.a() else " ")
+    cons.append("b" if sink.b() else " ")
+    cons.append("-" if sink.minus() else " ")
     message("a "+"".join(cons), y=144)
     source.a(0)
 
     source.b(1)
     cons = []
-    cons.append("+") if sink.plus() else cons.append(" ")
-    cons.append("a") if sink.a() else cons.append(" ")
-    cons.append("b") if sink.b() else cons.append(" ")
-    cons.append("-") if sink.minus() else cons.append(" ")
+    cons.append("+" if sink.plus() else " ")
+    cons.append("a" if sink.a() else " ")
+    cons.append("b" if sink.b() else " ")
+    cons.append("-" if sink.minus() else " ")
     message("b "+"".join(cons), y=116)
     source.b(0)
 
     source.minus(1)
     cons = []
-    cons.append("+") if sink.plus() else cons.append(" ")
-    cons.append("a") if sink.a() else cons.append(" ")
-    cons.append("b") if sink.b() else cons.append(" ")
-    cons.append("-") if sink.minus() else cons.append(" ")
+    cons.append("+" if sink.plus() else " ")
+    cons.append("a" if sink.a() else " ")
+    cons.append("b" if sink.b() else " ")
+    cons.append("-" if sink.minus() else " ")
     message("- "+"".join(cons), y=88)
     source.minus(0)
 

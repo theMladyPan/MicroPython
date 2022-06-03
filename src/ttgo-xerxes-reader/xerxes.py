@@ -36,7 +36,7 @@ class XerxesLeaf:
     
     def read(self) -> bytes:
         send_msg(self.com, b"\x00", self.addr.to_bytes(1, "big"), MsgId.fetch)
-        rpl = read_msg(self.com, timeout=5)
+        rpl = read_msg(self.com, timeout=15)
         return rpl.payload, rpl.message_id
     
 
@@ -198,6 +198,8 @@ def read_msg(com, *, timeout=0):
     raw_msg = bytes(0)
     for i in range(int(msg_len -    7)):
         next_byte = com.read(1)
+        if next_byte == None or sw.elapsed():
+            raise RuntimeError("Uart timeout")
         raw_msg += next_byte
         checksum += struct.unpack("!B", next_byte)[0]
     

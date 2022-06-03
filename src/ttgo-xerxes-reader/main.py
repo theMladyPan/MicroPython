@@ -1,6 +1,6 @@
 
 import struct
-import machine, gc, esp, time
+import machine, gc, esp, time, math
 
 from machine import Pin, SPI, UART, Timer
 from config import my_addr, TX_EN_Pin
@@ -190,25 +190,61 @@ uart1 = UART(1, baudrate=115200, tx=22, rx=21, timeout=5, timeout_char=5)
 time.sleep(1)
 display.fill(0)
 leaves = netscan()
+nr = 100
 
 while 1:        
     i = 0
     while leaves:
         leaf = leaves[i]
+        readings = []
         try:
-            reading, msgid = leaf.read()
-            print(leaf.addr, " replied with: ", reading, "msgid: ", hex(msgid))
-            message(text=str(hex(leaf.addr))+": "+str(bin(leaf.addr)), big=False)
+            
+            start = time.ticks_ms()
+            for n in range(nr):
+                reading, msgid = leaf.read()
+                readings.append(reading)
+            end = time.ticks_ms()    
+            v1, v2, v3, v4 = [], [], [], []
+            
+            for r in readings:
+                v1.append(r[0])
+                v2.append(r[1])
+                v3.append(r[2])
+                v4.append(r[3])
+                
+            av1, av2, av3, av4 = sum(v1)/nr, sum(v2)/nr, sum(v3)/nr, sum(v4)/nr
+            sd1, sd2, sd3, sd4 = stdev(v1), stdev(v2), stdev(v3), stdev(v4)
+            
+            averages = [av1, av2, av3, av4]
+            deviations = [sd1, sd2, sd3, sd4]
+             
+                
+            print(leaf.addr, " replied with: ", averages, deviations, "msgid: ", hex(msgid))
+            message(text=str(hex(leaf.addr))+": "+str(bin(leaf.addr))+": "+str(leaf.addr), big=False)
             message(
-                text=", ".join([str(i) for i in reading]), 
+                text=", ".join(["{:4.2f}".format(i) for i in averages]), 
                 clear=False,
+                big=False,
                 y=35
             )
+            message(
+                text=", ".join(["{:4.2f}".format(i) for i in deviations]), 
+                clear=False,
+                big=False,
+                y=70
+            )
+            dt = (end - start)/1000
+            fs = nr/dt
+            message(
+                text="Refresh rate: {:4.2f}Hz".format(fs),
+                clear=False,
+                big=False,
+                y=105
+            )
+            
+            
         except RuntimeError:
             print(leaf.addr, " timeouted...")
-            
-        time.sleep(1)
-    
     
         if not button1():
             if i < len(leaves) - 1:
