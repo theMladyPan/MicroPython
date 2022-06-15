@@ -16,5 +16,9 @@
             "command": "extension.execute",
             "priority": 4
         }
+    ],
+    "python.analysis.extraPaths": [
+        "./lib",
+        "src/sensirion-reader/sensirion-sen5x/sen5x/sen5x.py"
     ]
 }
