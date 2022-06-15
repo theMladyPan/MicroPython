@@ -5,7 +5,8 @@ import machine, gc, esp, time, math
 from machine import Pin, SPI, UART, Timer
 from config import my_addr, TX_EN_Pin
 from ttgo_config import *
-from xerxes import send_msg, read_msg, MsgId, leaf_generator, b2c, c2b, to_mmH2O
+from xerxes import send_msg, read_msg, MsgId
+from xerxes_leafs import leaf_generator, c2b, b2c
  
 # display imports
 import st7789
@@ -147,15 +148,17 @@ def netscan():
         print(", ".join(leaves_addr))
         message(", ".join(leaves_addr), clear=True)
         message("Continue?    ->", y=100)
-        while button2():
-            # wait for button press
-            pass
-        while not button2():
-            pass  # debounce
-        time.sleep_ms(10)
     else:
+        message("Nothing found. ", clear=True)
+        message("Continue?    ->", y=100)
         print("Nothing found.")          
-    
+
+    while bot_btn():
+        # wait for button press
+        pass
+    while not bot_btn():
+        pass  # debounce
+    time.sleep_ms(10)
     display.fill(0)
     return leaves
 
@@ -171,13 +174,13 @@ def netscan_int(pin=None):
 
 print("Mem free:", gc.mem_free())
 
-button1 = Pin(Button1_Pin, Pin.IN, Pin.PULL_UP)
-button2 = Pin(Button2_Pin, Pin.IN, Pin.PULL_UP)
+top_btn = Pin(Button1_Pin, Pin.IN, Pin.PULL_UP)
+bot_btn = Pin(Button2_Pin, Pin.IN, Pin.PULL_UP)
 tx_en = Pin(TX_EN_Pin, Pin.OUT, value=0)
 
 # bind button interrupts
-# button1.irq(trigger=Pin.IRQ_FALLING, handler=read_all_int) #interrupt for right button (button 1)
-# button2.irq(trigger=Pin.IRQ_FALLING, handler=netscan_int) #interrupt for left button (button 2)
+# top_btn.irq(trigger=Pin.IRQ_FALLING, handler=read_all_int) #interrupt for right button (button 1)
+# bot_btn.irq(trigger=Pin.IRQ_FALLING, handler=netscan_int) #interrupt for left button (button 2)
 
 read_all_flag = Flag()
 netscan_flag = Flag()
@@ -189,20 +192,39 @@ uart1 = UART(1, baudrate=115200, tx=22, rx=21, timeout=5, timeout_char=5)
 
 time.sleep(1)
 display.fill(0)
-leaves = netscan()
-nr = 100
+leaves = []
+while len(leaves) == 0:
+    leaves = netscan()
 
+
+message("100 samples  ->", clear=True)
+message("1000 samples ->", y=100)
+
+while top_btn() and bot_btn(): ...
+
+if top_btn():
+    ts = 100
+else:
+    ts = 1
+    
+nr = 100
+    
+time.sleep_ms(100)
+
+display.fill(0)
 while 1:        
     i = 0
     while leaves:
         leaf = leaves[i]
         readings = []
         try:
-            
+            message(text=str(hex(leaf.addr))+": "+str(bin(leaf.addr))+": "+str(leaf.addr), big=False)
             start = time.ticks_ms()
             for n in range(nr):
                 reading, msgid = leaf.read()
                 readings.append(reading)
+                if ts: time.sleep_ms(ts)
+                
             end = time.ticks_ms()    
             v1, v2, v3, v4 = [], [], [], []
             
@@ -220,7 +242,6 @@ while 1:
              
                 
             print(leaf.addr, " replied with: ", averages, deviations, "msgid: ", hex(msgid))
-            message(text=str(hex(leaf.addr))+": "+str(bin(leaf.addr))+": "+str(leaf.addr), big=False)
             message(
                 text=", ".join(["{:4.2f}".format(i) for i in averages]), 
                 clear=False,
@@ -228,7 +249,7 @@ while 1:
                 y=35
             )
             message(
-                text=", ".join(["{:4.2f}".format(i) for i in deviations]), 
+                text=", ".join(["{:4.4f}".format(i) for i in deviations]), 
                 clear=False,
                 big=False,
                 y=70
@@ -246,9 +267,9 @@ while 1:
         except RuntimeError:
             print(leaf.addr, " timeouted...")
     
-        if not button1():
+        if not top_btn():
             if i < len(leaves) - 1:
                 i += 1
-        elif not button2():
+        elif not bot_btn():
             if i > 0:
                 i -= 1

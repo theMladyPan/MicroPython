@@ -1,5 +1,10 @@
 import struct
 import time
+from micropython import const
+
+
+PROTOCOL_VERSION_MAJOR = const(1)
+PROTOCOL_VERSION_MIN = const(2)
 
 
 def b2c(data: bytes) -> int:
@@ -11,12 +16,17 @@ def c2b(data: int) -> bytes:
 
 
 class MsgId:
-    ping_req = struct.pack("!H", 0x0000)
-    ping_reply = struct.pack("!H", 0x0001)
-    ack_ok = struct.pack("!H", 0x0002)
-    ack_nok = struct.pack("!H", 0x0003)
-    fetch = struct.pack("!H", 0x0100)
-    sync = struct.pack("!H", 0x0101)
+    ping_req        = struct.pack("!H", 0x0000)
+    ping_reply      = struct.pack("!H", 0x0001)
+    ack_ok          = struct.pack("!H", 0x0002)
+    ack_nok         = struct.pack("!H", 0x0003)
+    fetch           = struct.pack("!H", 0x0100)
+    sync            = struct.pack("!H", 0x0101)
+    set             = struct.pack("!H", 0x0200)
+    read            = struct.pack("!H", 0x0201)
+    read_value      = struct.pack("!H", 0x0202)
+    fetch_generic   = struct.pack("!H", 0x1000)
+    
 
 
 class XerxesMessage:
@@ -26,81 +36,10 @@ class XerxesMessage:
         self.length = length
         self.message_id = message_id
         self.payload = payload
-
-
-class XerxesLeaf:
-    def __init__(self, address: int, serial_port) -> None:
-        self.com = serial_port
-        self.addr = address
-
     
-    def read(self) -> bytes:
-        send_msg(self.com, b"\x00", self.addr.to_bytes(1, "big"), MsgId.fetch)
-        rpl = read_msg(self.com, timeout=15)
-        return rpl.payload, rpl.message_id
-    
-
-class PressureLeaf(XerxesLeaf):
-    def read(self) -> list:
-        pl, msgid = super().read()
-        p, ts, te1, te2 = struct.unpack("!ffff", pl)
-        return [p, ts, te1, te2], msgid
-
-
-class StrainLeaf(XerxesLeaf):
-    def read(self) -> list:
-        pl, msgid = super().read()
-        s, te1, te2 = struct.unpack("!III", pl)
-        return [s, te1, te2], msgid
-
-
-class DistanceLeaf(XerxesLeaf):
-    def read(self) -> list:
-        pl, msgid = super().read()
-        d, te1, te2 = struct.unpack("!III", pl)
-        return [d, te1, te2], msgid
-
-
-class AngleLeaf(XerxesLeaf):
-    def read(self) -> list:
-        pl, msgid = super().read()
-        x, y, te1, te2 = struct.unpack("!ffff", pl)
-        return [x, y, te1, te2], msgid
-
-
-def leaf_generator(devId: int, address: int, serial_port: UART) -> XerxesLeaf:
-    if isinstance(devId, bytes):
-        devId = b2c(devId)
-
-    if devId == 0x03 or devId == 0x04:
-        return PressureLeaf(
-            address=address,
-            serial_port=serial_port
-        )
-
-    elif devId == 0x11:
-        return StrainLeaf(
-            address=address,
-            serial_port=serial_port
-            )
-
-    elif devId == 0x40:
-        return DistanceLeaf(
-            address=address,
-            serial_port=serial_port
-            )
-
-    elif devId == 0x30:
-        return AngleLeaf(
-            address=address,
-            serial_port=serial_port
-            )
-
-    else:
-        return XerxesLeaf(
-            address=address,
-            serial_port=serial_port
-            )
+    @property
+    def message_id_bytes(self) -> bytes:
+        return self.message_id.to_bytes(2, "big")
 
 
 def checksum(message: bytes) -> bytes:
@@ -111,12 +50,12 @@ def checksum(message: bytes) -> bytes:
     return summary.to_bytes(1, "big")
 
 
-def send_msg(com, sender, destination, payload: bytes, *, tx_en=None):    
+def send_msg(com: UART, sender: bytes, destination: bytes, payload: bytes, *, tx_en: bool=None):    
     msg = b"\x01"
     msg += (len(payload) + 5).to_bytes(1, "big")  # LEN
     msg += sender
     msg += destination #  DST
-    msg += payload  # MSGID
+    msg += payload
     msg += checksum(msg)
 
     if tx_en:
@@ -131,7 +70,7 @@ def send_msg(com, sender, destination, payload: bytes, *, tx_en=None):
 
     
 class StopWatch:
-    def __init__(self, timeout_ms):
+    def __init__(self, timeout_ms: int):
         self.start = time.ticks_ms()
         self.timeout = timeout_ms
         
@@ -152,7 +91,7 @@ def to_hex(byte):
     return hex(struct.unpack("!B", byte)[0])
 
 
-def read_msg(com, *, timeout=0):
+def read_msg(com: UART, *, timeout: int=0) -> XerxesMessage:
     # wait for start of message
     sw = StopWatch(timeout)
         
@@ -218,11 +157,3 @@ def read_msg(com, *, timeout=0):
         message_id=msg_id,
         payload=raw_msg
     )
-
-
-def to_celsius(millikelvin):
-    return (millikelvin / 1000) - 273.15
-
-
-def to_mmH2O(millipascal):
-    return ( millipascal / 9806.65 )
