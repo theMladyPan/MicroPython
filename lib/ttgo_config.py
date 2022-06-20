@@ -70,7 +70,7 @@ def message(text="", x=0, y=0, big=True, clear=False, wrap=True):
             
     if len(text) > cl and wrap:
         for i in range(len(text)/cl):
-            display.text(font, text[i*cl : i * cl + 15], x, y)
+            display.text(font, text[i*cl : i * cl + cl], x, y)
             y += yo
             
     else:
