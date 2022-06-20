@@ -58,8 +58,6 @@ class SEN5x:
     STOP_MEASUREMENT = const(0x0104)
     DATA_READY_FLAG = const(0x0202)
     MEASURED_VALUES = const(0x03C4)
-    VOC_ALGORITHM_TUNING_PARAMS = const(0x60D0)
-    NOX_ALGORITHM_TUNING_PARAMS = const(0x60E1)
     START_FAN_CLEANING = const(0x5607)
     AUTO_CLEANING_INTERVAL = const(0x8004)
     PRODUCT_NAME = const(0xD014)
@@ -151,64 +149,6 @@ class SEN5x:
         )
 
     @property
-    def voc_algorithm_tuning_params(self) -> tuple[int, int, int, int, int, int]:
-        if self.data_ready:
-            raise self.InvalidMode('Must be in idle mode')
-        self._cmd_read(self.VOC_ALGORITHM_TUNING_PARAMS, num_words=6)
-        # noinspection PyTypeChecker
-        return unpack('>6h', self._read_buffer)
-
-    @voc_algorithm_tuning_params.setter
-    def voc_algorithm_tuning_params(self, params: tuple[int, int, int, int, int, int]) -> None:
-        index_offset, time_offset, time_gain, max_duration, std_initial, gain_factor = params
-        if self.data_ready:
-            raise self.InvalidMode('Must be in idle mode')
-        if not 1 <= index_offset <= 250:
-            raise ValueError('Index Offset out of range')
-        if not 1 <= time_offset <= 1000:
-            raise ValueError('Time Offset out of range')
-        if not 1 <= time_gain <= 1000:
-            raise ValueError('Time Gain out of range')
-        if not 0 <= max_duration <= 3000:
-            raise ValueError('Max Duration out of range')
-        if not 10 <= std_initial <= 5000:
-            raise ValueError('Std Initial out of range')
-        if not 1 <= gain_factor <= 1000:
-            raise ValueError('Gain Factor out of range')
-        self._cmd_write(self.VOC_ALGORITHM_TUNING_PARAMS,
-                        pack('>6h', index_offset, time_offset, time_gain,
-                             max_duration, std_initial, gain_factor))
-
-    @property
-    def nox_algorithm_tuning_params(self) -> tuple[int, int, int, int, int, int]:
-        if self.data_ready:
-            raise self.InvalidMode('Must be in idle mode')
-        self._cmd_read(self.NOX_ALGORITHM_TUNING_PARAMS, num_words=6)
-        # noinspection PyTypeChecker
-        return unpack('>6h', self._read_buffer)
-
-    @nox_algorithm_tuning_params.setter
-    def nox_algorithm_tuning_params(self, params: tuple[int, int, int, int, int, int]) -> None:
-        index_offset, time_offset, time_gain, max_duration, std_initial, gain_factor = params
-        if self.data_ready:
-            raise self.InvalidMode('Must be in idle mode')
-        if not 1 <= index_offset <= 250:
-            raise ValueError('Index Offset out of range')
-        if not 1 <= time_offset <= 1000:
-            raise ValueError('Time Offset out of range')
-        if time_gain != 12:
-            raise ValueError('Time Gain out of range')
-        if not 0 <= max_duration <= 3000:
-            raise ValueError('Max Duration out of range')
-        if std_initial != 50:
-            raise ValueError('Std Initial out of range')
-        if not 1 <= gain_factor <= 1000:
-            raise ValueError('Gain Factor out of range')
-        self._cmd_write(self.NOX_ALGORITHM_TUNING_PARAMS,
-                        pack('>6h', index_offset, time_offset, time_gain,
-                             max_duration, std_initial, gain_factor))
-
-    @property
     def auto_cleaning_interval(self) -> int:
         self._cmd_read(self.AUTO_CLEANING_INTERVAL, num_words=2)
         return unpack('>L', self._read_buffer)[0]
@@ -232,10 +172,6 @@ class SEN5x:
         """ use to start sensor measurement """
         self.check_i2c()
         self.reset()  # in case running
-        try:
-            self.restore_voc_algorithm_state()
-        except OSError:  # no backup
-            pass
         self.start_measurement(0)
         self.check_for_errors()
 

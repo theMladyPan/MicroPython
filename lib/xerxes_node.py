@@ -16,11 +16,11 @@ class Node:
             msg = read_msg(com=self._com, timeout=self._timeout)
         
             if msg.message_id_bytes == MsgId.ping_req:
-                self._handle_ping(return_addr=msg.sender)
+                self._handle_ping(return_addr=msg.source)
                 return True
             
             elif msg.message_id_bytes == MsgId.fetch:
-                self._handle_fetch(return_addr=msg.sender, msgid=MsgId.fetch_generic)
+                self._handle_fetch(return_addr=msg.source, msgid=MsgId.fetch_generic)
                 return True
         
         else:
@@ -31,12 +31,12 @@ class Node:
         self._fetch_handler = handler
     
     
-    def _send(self, destination: int, msgid: MsgId, payload: bytes) -> None:
+    def _send(self, destination: bytes, msgid: MsgId, payload: bytes) -> None:
         send_msg(
             com=self._com, 
             sender=self._addr.to_bytes(1, "big"),
-            destination=destination.to_bytes(1, "big"),
-            payload=payload
+            destination=destination,
+            payload=msgid+payload
         )
     
     
