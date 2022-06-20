@@ -17,7 +17,7 @@ from xerxes_node import Node
 from uio import StringIO
 
 
-opt_level(0) # change to 3 after done
+opt_level(3) # change to 3 after done
 
 esp.osdebug(0)
 freq(240_000_000)
@@ -58,7 +58,7 @@ if not Lbtn():
 bat_volt = batpin.read_uv()*2*4.04/1_000_000
 
 sen.start()
-time.sleep(1)
+time.sleep(.2)
 display.fill(0)
 display.rotation(0)
 bind_display(display, font_small, font_big, 0)
@@ -96,12 +96,12 @@ try:
             except TypeError:
                     message('Not synced!', y=18*10 , big=False)
 
-        raw_data = sen.measured_values_raw
-        pm1, pm2, pm4, pm10, rh, t, voc, nox = raw_data
-        
+
+        pm1, pm2, pm4, pm10, rh, t, voc, nox = sen.measured_values_raw
         pm2 -= pm1
         pm4 -= pm2 + pm1
         pm10 -= pm4 + pm2 + pm1
+        raw_data = (pm1, pm2, pm4, pm10, rh, t, voc, nox)
 
         if not pm1 is None and not usb_uart.any(): 
             message('PM1:    ' + "{:3.1f}".format(pm1)                + 'ug/m3  ' , y=18*0 , big=False)
