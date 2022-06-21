@@ -42,7 +42,7 @@ def bind_display(disp, small, big, orient):
     orientation = orient
 
 
-def message(text="", x=0, y=0, big=True, clear=False, wrap=True):
+def message(text="", x=0, y=0, big=True, clear=False, wrap=True, color=1<<16):
     global display, font_big, font_small, orientation
     if display is None:
         raise Exception("Open display and bind it first")
@@ -70,8 +70,8 @@ def message(text="", x=0, y=0, big=True, clear=False, wrap=True):
             
     if len(text) > cl and wrap:
         for i in range(len(text)/cl):
-            display.text(font, text[i*cl : i * cl + cl], x, y)
+            display.text(font, text[i*cl : i * cl + cl], x, y, color)
             y += yo
             
     else:
-        display.text(font, text, x, y)
+        display.text(font, text, x, y, color)
