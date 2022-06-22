@@ -42,7 +42,7 @@ def bind_display(disp, small, big, orient):
     orientation = orient
 
 
-def message(text="", x=0, y=0, big=True, clear=False, wrap=True, color=1<<16):
+def message(text="", x=0, y=0, big=True, clear=False, wrap=True, color=(1<<16)-1):
     global display, font_big, font_small, orientation
     if display is None:
         raise Exception("Open display and bind it first")
