@@ -13,26 +13,37 @@ class XerxesLeaf:
         rpl = read_msg(self.com, timeout=15)
         return rpl.payload, rpl.message_id
     
+    def __str__(self):
+        return "XerxesLeaf(address={}, serial_port={})".format(self.addr, self.com)
 
 class PressureLeaf(XerxesLeaf):
     def read(self) -> list:
         pl, msgid = super().read()
         p, ts, te1, te2 = struct.unpack("!ffff", pl)
         return [p, ts, te1, te2], msgid
+    
+    def __str__(self):
+        return "PressureLeaf(address={}, serial_port={})".format(self.addr, self.com)
 
 
 class StrainLeaf(XerxesLeaf):
     def read(self) -> list:
         pl, msgid = super().read()
-        s, te1, te2 = struct.unpack("!III", pl)
-        return [s, te1, te2], msgid
+        s, te1, te2 = struct.unpack("!fff", pl)
+        return [s, 0, te1, te2], msgid
+    
+    def __str__(self):
+        return "StrainLeaf(address={}, serial_port={})".format(self.addr, self.com)
 
 
 class DistanceLeaf(XerxesLeaf):
     def read(self) -> list:
         pl, msgid = super().read()
-        d, te1, te2 = struct.unpack("!III", pl)
-        return [d, te1, te2], msgid
+        d, te1, te2 = struct.unpack("!fff", pl)
+        return [d*1000.0, 0, te1, te2], msgid
+    
+    def __str__(self):
+        return "DistanceLeaf(address={}, serial_port={})".format(self.addr, self.com)
 
 
 class AngleLeaf(XerxesLeaf):
@@ -40,7 +51,9 @@ class AngleLeaf(XerxesLeaf):
         pl, msgid = super().read()
         x, y, te1, te2 = struct.unpack("!ffff", pl)
         return [x, y, te1, te2], msgid
-
+    
+    def __str__(self):
+        return "AngleLeaf(address={}, serial_port={})".format(self.addr, self.com)
 
 def leaf_generator(devId: int, address: int, serial_port: UART) -> XerxesLeaf:
     if isinstance(devId, bytes):

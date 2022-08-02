@@ -5,8 +5,8 @@ import machine, gc, esp, time, math
 from machine import Pin, SPI, UART, Timer
 from config import my_addr, TX_EN_Pin
 from ttgo_config import *
-from xerxes import send_msg, read_msg, MsgId
-from xerxes_leafs import leaf_generator, c2b, b2c
+from xerxes import send_msg, read_msg, MsgId, c2b, b2c
+from xerxes_leafs import leaf_generator
  
 # display imports
 import st7789
@@ -126,14 +126,18 @@ def netscan():
         if uart1.any():
             reply = read_msg(uart1, timeout=5)     
             if reply:  
+                print("Found: ", end="")
+                print("DevId: " + str(b2c(reply.payload)) + ", Addr: " + str(b2c(reply.source)))
                 leaves_addr.append(str(struct.unpack("!B", reply.source)[0]))
-                leaves.append(
-                    leaf_generator(
+                new_leaf = leaf_generator(
                         devId=b2c(reply.payload),
                         address=b2c(reply.source),
                         serial_port=uart1
                     )
+                leaves.append(
+                    new_leaf
                 )
+                print("Appending: " + str(new_leaf))
                 message("#", big=False, x=xoff, y=yoff)
         else:
             message("-", big=False, x=xoff, y=yoff)   
@@ -196,8 +200,8 @@ leaves = []
 while len(leaves) == 0:
     leaves = netscan()
 
-
-message("100 samples  ->", clear=True)
+display.fill(0)
+message("100 samples  ->")
 message("1000 samples ->", y=100)
 
 while top_btn() and bot_btn(): ...
@@ -242,8 +246,10 @@ while 1:
              
                 
             print(leaf.addr, " replied with: ", averages, deviations, "msgid: ", hex(msgid))
+            text = ", ".join(["{:4.4f}".format(i) for i in [av1, av2]]) + ", "
+            text += ", ".join(["{:4.1f}".format(i) for i in [av3, av4]])
             message(
-                text=", ".join(["{:4.2f}".format(i) for i in averages]), 
+                text=text,
                 clear=False,
                 big=False,
                 y=35
