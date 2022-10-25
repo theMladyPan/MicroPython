@@ -34,7 +34,7 @@ class Node:
     def _send(self, destination: bytes, msgid: MsgId, payload: bytes) -> None:
         send_msg(
             com=self._com, 
-            sender=self._addr.to_bytes(1, "big"),
+            sender=self._addr.to_bytes(1, "little"),
             destination=destination,
             payload=msgid+payload
         )

@@ -119,19 +119,21 @@ def netscan():
         send_msg(
             uart1, 
             my_addr, 
-            i.to_bytes(1, "big"), 
+            i.to_bytes(1, "little"), 
             MsgId.ping_req
         )  # write empty payload
-        time.sleep_ms(2)
+        time.sleep_ms(5)
         if uart1.any():
-            reply = read_msg(uart1, timeout=5)     
+            print("received reply")
+            reply = read_msg(uart1, timeout=15)     
             if reply:  
                 print("Found: ", end="")
                 print("DevId: " + str(b2c(reply.payload)) + ", Addr: " + str(b2c(reply.source)))
-                leaves_addr.append(str(struct.unpack("!B", reply.source)[0]))
+                leaves_addr.append(str(struct.unpack("B", reply.source)[0]))
                 new_leaf = leaf_generator(
                         devId=b2c(reply.payload),
                         address=b2c(reply.source),
+                        root_addr=b2c(my_addr),
                         serial_port=uart1
                     )
                 leaves.append(
@@ -194,28 +196,30 @@ uart1 = UART(1, baudrate=115200, tx=22, rx=21, timeout=5, timeout_char=5)
 # tim1.init(period=1000, mode=Timer.PERIODIC, callback=request)
 
 
-time.sleep(1)
+time.sleep(.5)
 display.fill(0)
 leaves = []
 while len(leaves) == 0:
     leaves = netscan()
 
 display.fill(0)
-message("100 samples  ->")
-message("1000 samples ->", y=100)
+message("3 samples  ->")
+message("10 samples ->", y=100)
 
 while top_btn() and bot_btn(): ...
 
 if top_btn():
-    ts = 100
+    nr = 10
 else:
-    ts = 1
+    nr = 3
     
-nr = 100
+ts = 0
     
 time.sleep_ms(100)
 
 display.fill(0)
+display.rotation(0)
+
 while 1:        
     i = 0
     while leaves:
@@ -224,49 +228,64 @@ while 1:
         try:
             message(text=str(hex(leaf.addr))+": "+str(bin(leaf.addr))+": "+str(leaf.addr), big=False)
             start = time.ticks_ms()
+            
             for n in range(nr):
                 reading, msgid = leaf.read()
                 readings.append(reading)
                 if ts: time.sleep_ms(ts)
                 
             end = time.ticks_ms()    
-            v1, v2, v3, v4 = [], [], [], []
             
-            for r in readings:
-                v1.append(r[0])
-                v2.append(r[1])
-                v3.append(r[2])
-                v4.append(r[3])
+            # v1, v2, v3, v4 = [], [], [], []
+            values = [list() for i in range(len(readings[0]))]  # 2d array
+            averages = []  # 2d array
+            
+            # print(readings)
+            for reading in readings:  # 2D array
+                for i_value in range(len(reading)):  
+                    values[i_value].append(reading[i_value])
+                    
+            # print(values)         
+            
+            for value_list in values:
+                averages.append(sum(value_list)/nr)
+            
+            print("Averages: ", averages)
                 
-            av1, av2, av3, av4 = sum(v1)/nr, sum(v2)/nr, sum(v3)/nr, sum(v4)/nr
-            sd1, sd2, sd3, sd4 = stdev(v1), stdev(v2), stdev(v3), stdev(v4)
+                
+            # av1, av2, av3, av4 = sum(v1)/nr, sum(v2)/nr, sum(v3)/nr, sum(v4)/nr
+            # sd1, sd2, sd3, sd4 = stdev(v1), stdev(v2), stdev(v3), stdev(v4)
             
-            averages = [av1, av2, av3, av4]
-            deviations = [sd1, sd2, sd3, sd4]
+            # averages = [av1, av2, av3, av4]
+            # deviations = [sd1, sd2, sd3, sd4]
              
                 
-            print(leaf.addr, " replied with: ", averages, deviations, "msgid: ", hex(msgid))
-            text = ", ".join(["{:4.4f}".format(i) for i in [av1, av2]]) + ", "
-            text += ", ".join(["{:4.1f}".format(i) for i in [av3, av4]])
-            message(
-                text=text,
-                clear=False,
-                big=False,
-                y=35
-            )
-            message(
-                text=", ".join(["{:4.4f}".format(i) for i in deviations]), 
-                clear=False,
-                big=False,
-                y=70
-            )
+            print(leaf.addr, "Averages: ", averages, "msgid: ", hex(msgid))
+            # text = ", ".join(["{:4.3f}".format(i*1000) for i in averages])
+            y=30
+            for average in averages:
+                display.text(font_small, "{:4.3f}".format(average), 0, y)
+                y+= 18
+            # text += ", ".join(["{:4.1f}".format(i) for i in [av3, av4]])
+            # multiline(
+            #     text=text,
+            #     clear=False,
+            #     big=False,
+            #     y=35
+            # )
+            # message(
+            #     text=", ".join(["{:4.4f}".format(i) for i in deviations]), 
+            #     clear=False,
+            #     big=False,
+            #     y=70
+            # )
             dt = (end - start)/1000
             fs = nr/dt
             message(
-                text="Refresh rate: {:4.2f}Hz".format(fs),
+                text="Refresh: {:4.2f}Hz".format(fs),
                 clear=False,
                 big=False,
-                y=105
+                y=220
             )
             
             

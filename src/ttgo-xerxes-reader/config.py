@@ -1,2 +1,2 @@
-my_addr = b"\x00"
+my_addr = b"\xFE"
 TX_EN_Pin = 17
