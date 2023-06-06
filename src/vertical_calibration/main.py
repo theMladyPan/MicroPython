@@ -191,31 +191,31 @@ sm = Stepper(
 
 
 while 1:
-    ctr = 0
-    sm.set_delay(2000)
-    if not button1():
-        sm.half_fwd()
-        display.text(font_big, str(sm.steps / 100.0)+"mm    ", 0, 0)
-        time.sleep_ms(300)
-        while not button1(): 
-            sm.set_delay(max(0, (200 - ctr) * 100))
-            ctr += 1
-            
-            sm.half_fwd()
-            display.text(font_big, str(sm.steps / 100.0)+"mm    ", 0, 0)
-        
-    if not button2():
-        sm.half_rev()
-        display.text(font_big, str(sm.steps / 100.0)+"mm    ", 0, 0)
-        time.sleep_ms(300)
-        while not button2(): 
-            sm.set_delay(max(0, (200 - ctr) * 100))
-            ctr += 1
-            
-            sm.half_rev()       
-            display.text(font_big, str(sm.steps / 100.0)+"mm    ", 0, 0)
-                
-    if button1() and button2():
-        display.text(font_big, str(sm.steps / 100.0)+"mm    ", 0, 0)
+  ctr = 0
+  sm.set_delay(2000)
+  if not button1():
+    sm.half_fwd()
+    display.text(font_big, f"{str(sm.steps / 100.0)}mm    ", 0, 0)
+    time.sleep_ms(300)
+    while not button1(): 
+      sm.set_delay(max(0, (200 - ctr) * 100))
+      ctr += 1
+
+      sm.half_fwd()
+      display.text(font_big, f"{str(sm.steps / 100.0)}mm    ", 0, 0)
+
+  if not button2():
+    sm.half_rev()
+    display.text(font_big, f"{str(sm.steps / 100.0)}mm    ", 0, 0)
+    time.sleep_ms(300)
+    while not button2(): 
+      sm.set_delay(max(0, (200 - ctr) * 100))
+      ctr += 1
+
+      sm.half_rev()
+      display.text(font_big, f"{str(sm.steps / 100.0)}mm    ", 0, 0)
+
+  if button1() and button2():
+    display.text(font_big, f"{str(sm.steps / 100.0)}mm    ", 0, 0)
     
     

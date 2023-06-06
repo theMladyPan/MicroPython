@@ -13,12 +13,12 @@ i2c = I2C(1, scl=Pin(SCL_Pin), sda=Pin(SDA_Pin), freq=400000)
 
 def avgXYZ(buf):
     x, y, z = 0, 0, 0
-    samples = int(len(buf)/6)
-    for i in range(samples):
+    samples = len(buf) // 6
+    for _ in range(samples):
         x += buf[0]*256 + buf[1]
         y += buf[2]*256 + buf[3]
         z += buf[4]*256 + buf[5]
-    
+
     return [
         float(x) / samples, 
         float(y) / samples, 
@@ -80,12 +80,10 @@ class MPU6050:
             self.fifo_disable()
 
         if self.fifo_count:
-            buf = []
-            for i in range(6):
-                buf.append(self.fifo_pop())
+            buf = [self.fifo_pop() for _ in range(6)]
             if was_en: self.fifo_enable()
             return [x, y, z]
-        
+
         if was_en:
             self.fifo_enable()
         return []
@@ -96,11 +94,7 @@ class MPU6050:
         if was_en:
             self.fifo_disable()
 
-        buf = []
-        
-        for i in range(self.fifo_count):
-            buf.append(self.read_reg(116))
-        
+        buf = [self.read_reg(116) for _ in range(self.fifo_count)]
         if was_en:
             self.fifo_enable()
 

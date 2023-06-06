@@ -18,12 +18,11 @@ class CS(Pin):
 
 class Packet:
     def __init__(self, raw: bytes|bytearray) -> None:
-        if isinstance(raw, bytes) or isinstance(raw, bytearray):
-            self.VALUE = struct.unpack("!h", raw[1:3])[0]
-            intrep = struct.unpack("!I", raw)[0]
-        else:
+        if not isinstance(raw, (bytes, bytearray)):
             raise ValueError("Bytearray object expected, got", type(raw), " instead.")
 
+        self.VALUE = struct.unpack("!h", raw[1:3])[0]
+        intrep = struct.unpack("!I", raw)[0]
         self.raw = intrep
         self.RW = (intrep & 2**31) >> 31
         self.ADDR = (intrep & (0b01111100 << 16)) >> 18
@@ -35,7 +34,7 @@ class Packet:
 
     
     def __repr__(self) -> str:
-        return 'Packet(' + str(self.intrep) + ')'
+        return f'Packet({str(self.intrep)})'
 
     
 class Angles:
@@ -55,7 +54,7 @@ class Angles:
 
     
     def __repr__(self) -> str:
-        return "Angles(" + str(self.x) + ", " + str(self.y) + ", " + str(self.z) + ")"
+        return f"Angles({str(self.x)}, {str(self.y)}, {str(self.z)})"
 
 
 class Vector:
@@ -65,7 +64,7 @@ class Vector:
         self.z = z
 
     def __repr__(self) -> str:
-        return "Vector(" + str(self.x) + ", " + str(self.y) + ", " + str(self.z) + ")"
+        return f"Vector({str(self.x)}, {str(self.y)}, {str(self.z)})"
 
 
 class SCL3300:

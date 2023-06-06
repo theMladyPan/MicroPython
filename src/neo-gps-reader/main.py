@@ -8,7 +8,7 @@ from micropython import opt_level
 
 # display imports
 from ttgo_config import ORIENTATIONS, bind_display, message, TTGO_Pins
-import st7789 
+import st7789
 import vga1_8x16 as font_small
 import vga1_16x32 as font_big
 from uio import StringIO
@@ -57,7 +57,7 @@ while Rbtn():
     try:
         line = data.decode("utf-8").rstrip("\r\n")
         print(line)
-        
+
         if line.startswith("$GPGGA"):
             head, utc_time, latitude, ns, longitude, ew, GPS_quality, n_of_sattelites, horizontal_precision, antenna_altitude, alt_units, geoid_height, geoid_units, age_of_data, checksum = line.split(",")
             if float(horizontal_precision) > 10:
@@ -66,17 +66,22 @@ while Rbtn():
                 color = st7789.YELLOW
             else:
                 color = st7789.GREEN
-                
-            message("Lat:    " + latitude + " " + ns            + "    ", y=0,    big=False, color=color)
-            message("Long:   " + longitude + " " + ew           + "    ", y=1*18, big=False, color=color)
-            message("Prec:   " + horizontal_precision           + "    ", y=2*18, big=False, color=color)
-            message("Alt:    " + antenna_altitude + alt_units   + "    ", y=3*18, big=False, color=color)
-            message("Time:   " + utc_time                       + "    ", y=4*18, big=False, color=color)
-            message("N_sat:  " + n_of_sattelites                + "    ", y=5*18, big=False, color=color)
+
+            message(f"Lat:    {latitude} {ns}    ", y=0, big=False, color=color)
+            message(f"Long:   {longitude} {ew}    ", y=1*18, big=False, color=color)
+            message(f"Prec:   {horizontal_precision}    ", y=2*18, big=False, color=color)
+            message(
+                f"Alt:    {antenna_altitude}{alt_units}    ",
+                y=3 * 18,
+                big=False,
+                color=color,
+            )
+            message(f"Time:   {utc_time}    ", y=4*18, big=False, color=color)
+            message(f"N_sat:  {n_of_sattelites}    ", y=5*18, big=False, color=color)
         if line.startswith("$GPVTG"):
             _, _, _, _, _, _, _, kmph, _, _ = line.split(",")
-            message("Speed:  " + kmph + "km/h"                  + "    ", y=6*18, big=False, color=color)
-            
+            message(f"Speed:  {kmph}km/h    ", y=6*18, big=False, color=color)
+
     except UnicodeError:
         continue
     except ValueError as e:
@@ -96,14 +101,14 @@ while Rbtn():
                 clear=True
             )
             time.sleep(10)
-        
+
     if line.startswith("$GPGLL") and False:
         head, lat, ns, long, ew, utc_time, status, faa = line.split(",")
         print(lat, ns, long, ew, utc_time, status)
-        message("lat:    " + lat + ns,   y=0,    big=False, clear=True)
-        message("long:   " + long + ew,  y=1*18, big=False)
-        message("time:   " + utc_time,   y=2*18, big=False)
-        message("status: " + status,     y=3*18, big=False)
+        message(f"lat:    {lat}{ns}", y=0, big=False, clear=True)
+        message(f"long:   {long}{ew}", y=1*18, big=False)
+        message(f"time:   {utc_time}", y=2*18, big=False)
+        message(f"status: {status}", y=3*18, big=False)
 
 reset()
 ##display.on()

@@ -7,9 +7,7 @@ def create_dir(path: str) -> None:
     try:
         mkdir(path)
     except OSError as e:
-        if e.errno == 17:  # already exists
-            pass
-        else:
+        if e.errno != 17:
             raise
 
 

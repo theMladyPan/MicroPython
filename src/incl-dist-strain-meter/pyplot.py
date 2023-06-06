@@ -42,7 +42,7 @@ def on_press(event):
 ser = serial.Serial('/dev/ttyUSB0', 115200)
 ser.write(b"\x03\x04")
 
-log = open(str(time.time())+".txt", "a")
+log = open(f"{str(time.time())}.txt", "a")
 
 rcvd = ""
 while "# Starting measurement #" not in rcvd:
@@ -52,12 +52,9 @@ while "# Starting measurement #" not in rcvd:
 valnames = fetch(ser)[:-1]
 
 t = []
-vals = {}
 run = True
 
-for valname in valnames:
-    vals[valname] = []
-
+vals = {valname: [] for valname in valnames}
 axes = []
 lines = []
 
@@ -86,14 +83,13 @@ while run:
     log.write(";".join(fresh))
     log.write("\n")
     log.flush()
-    
+
     try:
         t.append(float(fresh[-1])/1000.0)
 
-        i = 0
-        for valname in valnames:
+        for i, valname in enumerate(valnames):
             vals[valname].append(float(fresh[i]))
-            
+
             if len(t) > subsetlen:
                 ysubset = vals[valname][-subsetlen:-1]
                 xsubset = t[-subsetlen:-1]
@@ -103,12 +99,10 @@ while run:
 
             lines[i].set_ydata(ysubset)
             lines[i].set_xdata(xsubset)
-            
+
             axes[i].set_ylim(min(ysubset), max(ysubset)+.01) # +1 to avoid singular transformation warning
             axes[i].set_xlim(min(xsubset), max(xsubset)+.01)
             axes[i].set_title(valname)
-
-            i += 1
 
         if j%5 == 0:
             plt.draw()

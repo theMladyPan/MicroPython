@@ -38,7 +38,7 @@ btn_tmr = Timer(0)
 
 class Press(Timer):
     def __init__(self, _tnr: int, threshold_ms: int) -> None:
-        super().__init__(int(_tnr))
+        super().__init__(_tnr)
         self.threshold = threshold_ms
         self._pressed = False
     
@@ -51,15 +51,11 @@ class Press(Timer):
         
     @property
     def long(self):
-        if super().value() >= self.threshold:
-            return True
-        return False
+        return super().value() >= self.threshold
 
     @property
     def short(self):
-        if super().value() > 0 and super().value() < self.threshold:
-            return True
-        return False
+        return super().value() > 0 and super().value() < self.threshold
     
     @property
     def value(self):
@@ -95,13 +91,17 @@ def duration_to_time(seconds: float):
 def start_cycle(duration_hr: float): 
     display.fill(0)
     tmr1 = Timer(1)
-    duration_ms = float(duration_hr) * 60 * 60 * 1000
+    duration_ms = duration_hr * 60 * 60 * 1000
     p=Pin(12, Pin.OUT, value=1)
     tmr1.init(period=int(duration_ms), mode=Timer.PERIODIC, callback=lambda _evt: p(not p()))
     while True:
         message("Output: {:4}".format("ON" if p() else "OFF"), color=st7789.GREEN if p() else st7789.RED)
-        message(duration_to_time((duration_ms - tmr1.value())/1000)+"  ", y=30, )
-        message(duration_to_time(tmr1.value()/1000)+"  ", y=60, color=(1<<14)+(1<<9)+(1<<3))
+        message(f"{duration_to_time((duration_ms - tmr1.value()) / 1000)}  ", y=30)
+        message(
+            f"{duration_to_time(tmr1.value() / 1000)}  ",
+            y=60,
+            color=(1 << 14) + (1 << 9) + (1 << 3),
+        )
             
     
 p1 = Press(0, threshold_ms=300)    

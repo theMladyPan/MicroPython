@@ -60,7 +60,7 @@ class Flag:
 
 
 def print_center(string: str) -> None:
-    string="   " + str(string) + "   "
+    string = f"   {string}   "
     slen = len(string)*16
     display.text(font_big, string, int((240/2)-(slen/2)), int((135/2)-8))
 
@@ -87,7 +87,7 @@ tare_val = 0
 while 1:
     meas=0
     ts = utime.ticks_us()
-    for i in range(n_samples):
+    for _ in range(n_samples):
         while not hx.is_ready():
             pass
         meas += hx.read()
@@ -105,7 +105,7 @@ while 1:
     # display.fill(st7789.BLACK)
     print(meas)
     try:
-        freq = "@ "+str(int(n_samples/cycle))+"Hz"
+        freq = f"@ {int(n_samples / cycle)}Hz"
         display.text(font_small, freq, 0, 135-16)
     except:
         pass

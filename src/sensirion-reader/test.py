@@ -17,7 +17,7 @@ sen = SEN5x(i2c, address=ADDRESS)
 
 def test_str_repr():
     print(repr(sen))
-    print(str(sen))
+    print(sen)
 
 
 def test_product_name():

@@ -92,7 +92,7 @@ def leaf_generator(devId: int, address: int, serial_port: serial.Serial) -> Xerx
     if isinstance(devId, bytes):
         devId = b2i(devId)
 
-    if devId == 0x03 or devId == 0x04:
+    if devId in [0x03, 0x04]:
         return PressureLeaf(
             address=address,
             serial_port=serial_port
@@ -131,11 +131,9 @@ def read_msg(com: serial.Serial) -> XerxesMessage:
         if len(next_byte)==0:
             raise TimeoutError("No message in queue")
 
-    checksum = 0x01
     # read message length
     msg_len = int(com.read(1).hex(), 16)
-    checksum += msg_len
-
+    checksum = 0x01 + msg_len
     #read source and destination address
     src = com.read(1)
     dst = com.read(1)
@@ -154,11 +152,11 @@ def read_msg(com: serial.Serial) -> XerxesMessage:
 
     # read and unpack all data into array, assuming it is uint32_t, big-endian
     raw_msg = bytes(0)
-    for i in range(int(msg_len -    7)):
+    for _ in range(int(msg_len -    7)):
         next_byte = com.read(1)
         raw_msg += next_byte
         checksum += int(next_byte.hex(), 16)
-    
+
     #read checksum
     rcvd_chks = com.read(1)
     checksum += int(rcvd_chks.hex(), 16)
@@ -200,20 +198,14 @@ if __name__ == "__main__":
             address=30,
             serial_port=com
         )
-        distances = []
-
-        for i in range(1000):
-            distances.append(
-                dleaf.read()[0][0]
-            )
-
+        distances = [dleaf.read()[0][0] for _ in range(1000)]
         print(
             mean(distances),
             median(distances),
             stdev(distances),
             (stdev(distances) / mean(distances)) * 100
         )
-        
+
         while addresses:
             addr = addresses.pop()
             send_msg(com, addr.to_bytes(1, "big"), MsgId.ping_req)
@@ -244,7 +236,7 @@ if __name__ == "__main__":
                 except ValueError:
                     pass
             time.sleep(1)
-            
+
 
     finally:
         com.close()

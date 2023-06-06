@@ -301,9 +301,7 @@ class SEN5x:
         """
         crc = 0xFF ^ msb
         crc = SEN5x.CRC_TABLE[crc] ^ lsb
-        crc = SEN5x.CRC_TABLE[crc]
-
-        return crc
+        return SEN5x.CRC_TABLE[crc]
 
     @staticmethod
     def _words_to_string(words: bytearray) -> str:

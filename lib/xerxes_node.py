@@ -12,19 +12,17 @@ class Node:
     def sync(self) -> bool:
         """Handle incoming message if any is present
         """
-        if self._com.any():
-            msg = read_msg(com=self._com, timeout=self._timeout)
-        
-            if msg.message_id_bytes == MsgId.ping_req:
-                self._handle_ping(return_addr=msg.source)
-                return True
-            
-            elif msg.message_id_bytes == MsgId.fetch:
-                self._handle_fetch(return_addr=msg.source, msgid=MsgId.fetch_generic)
-                return True
-        
-        else:
+        if not self._com.any():
             return False
+        msg = read_msg(com=self._com, timeout=self._timeout)
+
+        if msg.message_id_bytes == MsgId.ping_req:
+            self._handle_ping(return_addr=msg.source)
+            return True
+
+        elif msg.message_id_bytes == MsgId.fetch:
+            self._handle_fetch(return_addr=msg.source, msgid=MsgId.fetch_generic)
+            return True
     
     
     def bind_fetch_handler(self, handler: callable) -> None:

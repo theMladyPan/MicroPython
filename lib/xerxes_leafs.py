@@ -18,7 +18,7 @@ class XerxesLeaf:
         return rpl.payload, rpl.message_id
     
     def __str__(self):
-        return "XerxesLeaf(address={}, serial_port={})".format(self.addr, self.com)
+        return f"XerxesLeaf(address={self.addr}, serial_port={self.com})"
 
 
 class PressureLeaf(XerxesLeaf):
@@ -28,7 +28,7 @@ class PressureLeaf(XerxesLeaf):
         return [p, ts, te1, te2], msgid
     
     def __str__(self):
-        return "PressureLeaf(address={}, serial_port={})".format(self.addr, self.com)
+        return f"PressureLeaf(address={self.addr}, serial_port={self.com})"
 
 
 class StrainLeaf(XerxesLeaf):
@@ -38,7 +38,7 @@ class StrainLeaf(XerxesLeaf):
         return [s, te1, te2], msgid
     
     def __str__(self):
-        return "StrainLeaf(address={}, serial_port={})".format(self.addr, self.com)
+        return f"StrainLeaf(address={self.addr}, serial_port={self.com})"
 
 
 class DistanceLeaf(XerxesLeaf):
@@ -48,7 +48,7 @@ class DistanceLeaf(XerxesLeaf):
         return [d1*1000, d2*1000, raw1, raw2, te1, te2], msgid
     
     def __str__(self):
-        return "DistanceLeaf(address={}, serial_port={})".format(self.addr, self.com)
+        return f"DistanceLeaf(address={self.addr}, serial_port={self.com})"
 
 
 class AngleLeaf(XerxesLeaf):
@@ -58,16 +58,16 @@ class AngleLeaf(XerxesLeaf):
         return [x, y, ts, te1, te2], msgid
     
     def __str__(self):
-        return "AngleLeaf(address={}, serial_port={})".format(self.addr, self.com)
+        return f"AngleLeaf(address={self.addr}, serial_port={self.com})"
 
 
 def leaf_generator(devId: int, address: int, root_addr: int, serial_port: UART) -> XerxesLeaf:
     if isinstance(devId, bytes):
         devId = b2c(devId)
-        
+
     assert isinstance(devId, int)
 
-    if devId == 0x03 or devId == 0x04:
+    if devId in [0x03, 0x04]:
         return PressureLeaf(
             address=address,
             serial_port=serial_port,

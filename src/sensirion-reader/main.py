@@ -68,7 +68,7 @@ usb_uart = UART(1, baudrate=115_200, timeout=5, timeout_char=5, tx=1, rx=3)
 # print('Product Name:', sen.product_name)
 # print('Serial Number:', sen.serial_number)
 
-raw_data = (0 for i in range(8))
+raw_data = (0 for _ in range(8))
 
 def fetcher():
     global raw_data
@@ -103,26 +103,26 @@ try:
         pm10 -= pm4 + pm2 + pm1
         raw_data = (pm1, pm2, pm4, pm10, rh, t, voc, nox)
 
-        if not pm1 is None and not usb_uart.any(): 
+        if pm1 is not None and not usb_uart.any(): 
             message('PM1:    ' + "{:3.1f}".format(pm1)                + 'ug/m3  ' , y=18*0 , big=False)
-        if not pm2 is None and not usb_uart.any(): 
+        if pm2 is not None and not usb_uart.any(): 
             message('PM2.5:  ' + "{:3.1f}".format(pm2)                + 'ug/m3  ' , y=18*1 , big=False)
-        if not pm4 is None and not usb_uart.any(): 
+        if pm4 is not None and not usb_uart.any(): 
             message('PM4:    ' + "{:3.1f}".format(pm4)                + 'ug/m3  ' , y=18*2 , big=False)
-        if not pm10 is None and not usb_uart.any(): 
+        if pm10 is not None and not usb_uart.any(): 
             message('PM10:   ' + "{:3.1f}".format(pm10)               + 'ug/m3  ' , y=18*3 , big=False)
-        if not rh is None and not usb_uart.any(): 
+        if rh is not None and not usb_uart.any(): 
             message('RH:     ' + "{:3.1f}".format(rh)                 + '%  '     , y=18*4 , big=False)
-        if not t is None and not usb_uart.any(): 
+        if t is not None and not usb_uart.any(): 
             message('Temp:   ' + "{:3.1f}".format(t)                  + 'oC '     , y=18*5 , big=False)
-        if not voc is None and not usb_uart.any(): 
+        if voc is not None and not usb_uart.any(): 
             message('VOC:    ' + "{:3.1f}".format(voc)                + 'i  '     , y=18*6 , big=False)
-        if not nox is None and not usb_uart.any(): 
+        if nox is not None and not usb_uart.any(): 
             message('NOx:    ' + "{:3.1f}".format(nox)                + 'i  '     , y=18*7 , big=False)
         if not usb_uart.any():
-            message('Status: ' + str(bin(sen.status))                 + '  '      , y=18*8 , big=False)
+            message(f'Status: {bin(sen.status)}  ', y=18*8, big=False)
             message('             '                                               , y=18*10, big=False)
-    
+
 
 except Exception as e:
     # bind_display(display, font_small, font_big, 0)

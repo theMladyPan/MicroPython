@@ -75,16 +75,16 @@ class StopWatch:
         self.timeout = timeout_ms
         
     def elapsed(self):
-        if self.timeout:
-            return ( time.ticks_ms() - self.start ) > self.timeout
-        else:
-            return False
+        return (
+            (time.ticks_ms() - self.start) > self.timeout
+            if self.timeout
+            else False
+        )
     
     def running(self):
-        if self.timeout:
-            return ( time.ticks_ms() - self.start ) < self.timeout
-        else:
-            return True
+        return (
+            (time.ticks_ms() - self.start) < self.timeout if self.timeout else True
+        )
 
 
 def to_hex(byte):
@@ -94,7 +94,7 @@ def to_hex(byte):
 def read_msg(com: UART, *, timeout: int=0) -> XerxesMessage:
     # wait for start of message
     sw = StopWatch(timeout)
-        
+
     next_byte = com.read(1)
     while next_byte != b"\x01":
         next_byte = com.read(1)
@@ -105,17 +105,17 @@ def read_msg(com: UART, *, timeout: int=0) -> XerxesMessage:
     # read message length
     # msg_len = int(com.read(1).hex(), 16)
     msg_len = struct.unpack("B", com.read(1))[0]
-    
+
     checksum += msg_len
 
     if sw.elapsed():
         raise RuntimeError("Uart timeout")
     #read source and destination address
     src = com.read(1)
-    if sw.elapsed() or src == None:
+    if sw.elapsed() or src is None:
         raise RuntimeError("Uart timeout")
     dst = com.read(1)
-    if sw.elapsed() or dst == None:
+    if sw.elapsed() or dst is None:
         raise RuntimeError("Uart timeout")
 
     for i in [src, dst]:
@@ -125,7 +125,7 @@ def read_msg(com: UART, *, timeout: int=0) -> XerxesMessage:
     msg_id_raw = com.read(2)
     if sw.elapsed(): 
         raise RuntimeError("Uart timeout")
-    
+
     if(len(msg_id_raw)!=2):
         raise RuntimeError("Invalid message received")
     for i in msg_id_raw:
@@ -135,13 +135,13 @@ def read_msg(com: UART, *, timeout: int=0) -> XerxesMessage:
 
     # read and unpack all data into array
     raw_msg = bytes(0)
-    for i in range(int(msg_len -    7)):
+    for _ in range(int(msg_len -    7)):
         next_byte = com.read(1)
-        if next_byte == None or sw.elapsed():
+        if next_byte is None or sw.elapsed():
             raise RuntimeError("Uart timeout")
         raw_msg += next_byte
         checksum += struct.unpack("B", next_byte)[0]
-    
+
     #read checksum
     rcvd_chks = com.read(1)
     checksum += struct.unpack("B", rcvd_chks)[0]
@@ -149,7 +149,7 @@ def read_msg(com: UART, *, timeout: int=0) -> XerxesMessage:
     if checksum:
         print("received checksum: ", checksum)
         raise RuntimeError("Invalid checksum received")
-    
+
     return XerxesMessage(
         source=src,
         destination=dst,

@@ -105,10 +105,7 @@ while 1:
             show_stdev = True
 
         if not button1() and not button2():
-            if ns == 100:
-                ns = 20
-            else:
-                ns = 100
+            ns = 20 if ns == 100 else 100
             display.fill(0)
             display.text(font_big, "average of:", 0, 0)
             display.text(font_big, str(ns), 0, 40)
@@ -117,50 +114,43 @@ while 1:
             display.fill(0)
 
         x, y = [], []
-        for i in range(ns):
+        for _ in range(ns):
             xyz = incl1.read_ang()
             x.append(xyz.x)
             y.append(xyz.y)
 
-        
-        if show_stdev:
-            display.text(font_big, "sdx1: " + str(round(stdev(x), 4)) + "     ", 0, 0)
-            display.text(font_big, "sdy1: " + str(round(stdev(y), 4)) + "     ", 0, 34)
-        else:
-            display.text(font_big, "x1  : " + str(round(sum(x)/len(x), 4)) + "     ", 0, 0)
-            display.text(font_big, "y1  : " + str(round(sum(y)/len(y), 4)) + "     ", 0, 34)
 
-        print(
-            str(sum(x)/len(x)),
-            str(stdev(x)),
-            str(sum(y)/len(y)),
-            str(stdev(y)),
-            sep="; ",
-            end="; "
-        )
+        if show_stdev:
+            display.text(font_big, f"sdx1: {str(round(stdev(x), 4))}     ", 0, 0)
+            display.text(font_big, f"sdy1: {str(round(stdev(y), 4))}     ", 0, 34)
+        else:
+            display.text(font_big, f"x1  : {str(round(sum(x) / len(x), 4))}     ", 0, 0)
+            display.text(font_big, f"y1  : {str(round(sum(y) / len(y), 4))}     ", 0, 34)
+
+        print(sum(x)/len(x), stdev(x), sum(y)/len(y), stdev(y), sep="; ", end="; ")
 
         x, y = [], []
 
-        for i in range(ns):
+        for _ in range(ns):
             xyz = incl2.read_ang()
             x.append(xyz.x)
             y.append(xyz.y)
 
         if show_stdev:
-            display.text(font_big, "sdx2: " + str(round(stdev(x), 4)) + "     ", 0, 68)
-            display.text(font_big, "sdy2: " + str(round(stdev(y), 4)) + "     ", 0, 102)
+            display.text(font_big, f"sdx2: {str(round(stdev(x), 4))}     ", 0, 68)
+            display.text(font_big, f"sdy2: {str(round(stdev(y), 4))}     ", 0, 102)
         else:
-            display.text(font_big, "x2  : " + str(round(sum(x)/len(x), 4)) + "     ", 0, 68)
-            display.text(font_big, "y2  : " + str(round(sum(y)/len(y), 4)) + "     ", 0, 102)
+            display.text(font_big, f"x2  : {str(round(sum(x) / len(x), 4))}     ", 0, 68)
+            display.text(font_big, f"y2  : {str(round(sum(y) / len(y), 4))}     ", 0, 102)
 
-        
+
         print(
-            str(sum(x)/len(x)),
-            str(stdev(x)),
-            str(sum(y)/len(y)),
-            str(stdev(y)),
-            str(time.ticks_ms()),
-            sep="; "
+            sum(x) / len(x),
+            stdev(x),
+            sum(y) / len(y),
+            stdev(y),
+            time.ticks_ms(),
+            sep="; ",
         )
 
     except KeyboardInterrupt:
@@ -168,7 +158,6 @@ while 1:
 
     except:
         print("error")
-        pass  # just continue
 
 
 

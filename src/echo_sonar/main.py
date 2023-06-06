@@ -28,10 +28,10 @@ def measure():
     end = time.ticks_us()   
     return time.ticks_diff(end, start)
 
+# speed of sound = 340.29m/s
+vs = 340.29
 while True:
-    # speed of sound = 340.29m/s
-    vs = 340.29
     raw_dist = measure()
-    print("Distance: " + str(raw_dist*vs/2000) + "mm", end="\r")
+    print(f"Distance: {str(raw_dist * vs / 2000)}mm", end="\r")
     time.sleep(0.1)
                                                                                                                                                 

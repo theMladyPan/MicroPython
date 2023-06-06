@@ -49,7 +49,7 @@ def message(text="", x=0, y=0, big=True, clear=False, wrap=True, color=(1<<16)-1
 
     if clear:
         display.fill(0)
-    if orientation == 0 or orientation == 2:
+    if orientation in [0, 2]:
         if big:
             font = font_big
             cl = 7
@@ -58,20 +58,19 @@ def message(text="", x=0, y=0, big=True, clear=False, wrap=True, color=(1<<16)-1
             font = font_small  
             cl = 15
             yo = 15
+    elif big:
+        font = font_big
+        cl = 15
+        yo = 30
     else:
-        if big:
-            font = font_big
-            cl = 15
-            yo = 30
-        else:
-            font = font_small  
-            cl = 30
-            yo = 15
-            
+        font = font_small  
+        cl = 30
+        yo = 15
+
     if len(text) > cl and wrap:
         for i in range(len(text)/cl):
             display.text(font, text[i*cl : i * cl + cl], x, y, color)
             y += yo
-            
+
     else:
         display.text(font, text, x, y, color)

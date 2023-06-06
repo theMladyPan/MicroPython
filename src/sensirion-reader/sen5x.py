@@ -299,9 +299,10 @@ class SEN5x:
 
     @rht_acceleration_mode.setter
     def rht_acceleration_mode(self, mode: int) -> None:
-        if mode not in (0, 1, 2):
+        if mode in {0, 1, 2}:
+            self._cmd_write(self.RHT_ACCELERATION_MODE, pack('>H', mode))
+        else:
             raise ValueError('Mode out of range')
-        self._cmd_write(self.RHT_ACCELERATION_MODE, pack('>H', mode))
 
     @property
     def voc_algorithm_state(self) -> bytes:
@@ -524,9 +525,7 @@ class SEN5x:
         """
         crc = 0xFF ^ msb
         crc = SEN5x.CRC_TABLE[crc] ^ lsb
-        crc = SEN5x.CRC_TABLE[crc]
-
-        return crc
+        return SEN5x.CRC_TABLE[crc]
 
     @staticmethod
     def _words_to_string(words: bytearray) -> str:

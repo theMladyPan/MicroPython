@@ -98,10 +98,9 @@ while Rbtn():
         message("Bat: 5V    ", big=False, wrap=False)
     else:
         message("Bat: {:0.2f}".format(bat_volt)+"V    ", big=False, wrap=False)
-        
+
     source.plus(1)
-    cons = []
-    cons.append("+" if sink.plus() else " ")
+    cons = ["+" if sink.plus() else " "]
     cons.append("a" if sink.a() else " ")
     cons.append("b" if sink.b() else " ")
     cons.append("-" if sink.minus() else " ")
@@ -110,16 +109,19 @@ while Rbtn():
 
     source.a(1)
     cons = []
-    cons.append("+" if sink.plus() else " ")
-    cons.append("a" if sink.a() else " ")
-    cons.append("b" if sink.b() else " ")
-    cons.append("-" if sink.minus() else " ")
+    cons.extend(
+        (
+            "+" if sink.plus() else " ",
+            "a" if sink.a() else " ",
+            "b" if sink.b() else " ",
+            "-" if sink.minus() else " ",
+        )
+    )
     message("a "+"".join(cons), y=144)
     source.a(0)
 
     source.b(1)
-    cons = []
-    cons.append("+" if sink.plus() else " ")
+    cons = ["+" if sink.plus() else " "]
     cons.append("a" if sink.a() else " ")
     cons.append("b" if sink.b() else " ")
     cons.append("-" if sink.minus() else " ")
@@ -128,10 +130,14 @@ while Rbtn():
 
     source.minus(1)
     cons = []
-    cons.append("+" if sink.plus() else " ")
-    cons.append("a" if sink.a() else " ")
-    cons.append("b" if sink.b() else " ")
-    cons.append("-" if sink.minus() else " ")
+    cons.extend(
+        (
+            "+" if sink.plus() else " ",
+            "a" if sink.a() else " ",
+            "b" if sink.b() else " ",
+            "-" if sink.minus() else " ",
+        )
+    )
     message("- "+"".join(cons), y=88)
     source.minus(0)
 

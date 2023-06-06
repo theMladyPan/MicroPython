@@ -140,11 +140,7 @@ def show_stdev(evt):
 
 
 def change_sample(evt):
-    if ns.val == 10:
-        ns.val = 100
-    else:
-        ns.val = 10
-
+    ns.val = 100 if ns.val == 10 else 10
     display.fill(0)
     display.text(font_big, "average of:", 0, 0)
     display.text(font_big, str(ns.val), 0, 40)
@@ -164,7 +160,7 @@ while 1:
 
     try:
         x, y = [], []
-        for i in range(ns.val):
+        for _ in range(ns.val):
             while not hx1.is_ready(): ...
             x.append(hx1.read())
             while not hx2.is_ready(): ...
@@ -175,10 +171,10 @@ while 1:
         s1_std = stdev(x)
         s2_std = stdev(y)
 
-        
+
         # measure first inclinometer
         x, y = [], []
-        for i in range(ns.val):
+        for _ in range(ns.val):
             xyz = incl1.read_ang()
             x.append(xyz.x)
             y.append(xyz.y)
@@ -191,7 +187,7 @@ while 1:
         # measure second inclinometer
         x, y = [], []
 
-        for i in range(ns.val):
+        for _ in range(ns.val):
             xyz = incl2.read_ang()
             x.append(xyz.x)
             y.append(xyz.y)
@@ -205,52 +201,48 @@ while 1:
         # measure sadc
         x = []
 
-        for i in range(ns.val):
+        for _ in range(ns.val):
             val16 = adc.read_u16()
             x.append(adc_to_mm(val16))
 
-        l1_avg = sum(x)/len(x) 
+        l1_avg = sum(x)/len(x)
         l1_std = stdev(x)
 
         if f_show_std.is_set():
-            display.text(font_small, "sds1: " + str(round(s1_std, 4)) + "     ", 0, 00)
-            display.text(font_small, "sds2: " + str(round(s2_std, 4)) + "     ", 0, 18)
-            display.text(font_small, "sdx1: " + str(round(x1_std, 4)) + "     ", 0, 36)
-            display.text(font_small, "sdy1: " + str(round(y1_std, 4)) + "     ", 0, 54)
-            display.text(font_small, "sdx2: " + str(round(x2_std, 4)) + "     ", 0, 72)
-            display.text(font_small, "sdy2: " + str(round(y2_std, 4)) + "     ", 0, 90)
-            display.text(font_small, "sdl1: " + str(round(l1_std, 4)) + "     ", 0, 108)
+            display.text(font_small, f"sds1: {str(round(s1_std, 4))}     ", 0, 00)
+            display.text(font_small, f"sds2: {str(round(s2_std, 4))}     ", 0, 18)
+            display.text(font_small, f"sdx1: {str(round(x1_std, 4))}     ", 0, 36)
+            display.text(font_small, f"sdy1: {str(round(y1_std, 4))}     ", 0, 54)
+            display.text(font_small, f"sdx2: {str(round(x2_std, 4))}     ", 0, 72)
+            display.text(font_small, f"sdy2: {str(round(y2_std, 4))}     ", 0, 90)
+            display.text(font_small, f"sdl1: {str(round(l1_std, 4))}     ", 0, 108)
         else:
-            display.text(font_small, "s1  : " + str(round(s1_avg, 4)) + "     ", 0, 00)
-            display.text(font_small, "s2  : " + str(round(s2_avg, 4)) + "     ", 0, 18)
-            display.text(font_small, "x1  : " + str(round(x1_avg, 4)) + "     ", 0, 36)
-            display.text(font_small, "y1  : " + str(round(y1_avg, 4)) + "     ", 0, 54)
-            display.text(font_small, "x2  : " + str(round(x2_avg, 4)) + "     ", 0, 72)
-            display.text(font_small, "y2  : " + str(round(y2_avg, 4)) + "     ", 0, 90)
-            display.text(font_small, "l1  : " + str(round(l1_avg, 4)) + "     ", 0, 108)
+            display.text(font_small, f"s1  : {str(round(s1_avg, 4))}     ", 0, 00)
+            display.text(font_small, f"s2  : {str(round(s2_avg, 4))}     ", 0, 18)
+            display.text(font_small, f"x1  : {str(round(x1_avg, 4))}     ", 0, 36)
+            display.text(font_small, f"y1  : {str(round(y1_avg, 4))}     ", 0, 54)
+            display.text(font_small, f"x2  : {str(round(x2_avg, 4))}     ", 0, 72)
+            display.text(font_small, f"y2  : {str(round(y2_avg, 4))}     ", 0, 90)
+            display.text(font_small, f"l1  : {str(round(l1_avg, 4))}     ", 0, 108)
 
-        
+
         print(
-            str(s1_avg),
-            str(s1_std),
-            str(s2_avg),
-            str(s2_std),
-
-            str(x1_avg),
-            str(x1_std),
-            str(y1_avg),
-            str(y1_std),
-
-            str(x2_avg),
-            str(x2_std),
-            str(y2_avg),
-            str(y2_std),
-
-            str(l1_avg),
-            str(l1_std),
-
-            str(time.ticks_ms()),
-            sep="; "
+            s1_avg,
+            s1_std,
+            s2_avg,
+            s2_std,
+            x1_avg,
+            x1_std,
+            y1_avg,
+            y1_std,
+            x2_avg,
+            x2_std,
+            y2_avg,
+            y2_std,
+            l1_avg,
+            l1_std,
+            time.ticks_ms(),
+            sep="; ",
         )
 
     except KeyboardInterrupt:
